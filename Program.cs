@@ -31,13 +31,14 @@ namespace dl
             var inputLayer = new InputLayer(8);
             var layer00 = new FullyConnectedLayer(inputLayer, activationFunction, 2);
 
-            var machine = new Machine(errorFunction
+            var machine = new Machine(0.01, 3
+                                    , errorFunction
                                     , inputLayer
                                     , layer00);
 
             var testData =
-                from x in Enumerable.Range(0, 20)
-                from y in Enumerable.Range(0, 20)
+                from x in Enumerable.Range(1, 20)
+                from y in Enumerable.Range(1, 20)
                 let isTrue = x * (y * 2) < 10
                 select LearningData.New(new double[] { x, y }, isTrue ? new[] { 1.0, 0.0 } : new[] { 0.0, 1.0 });
             
@@ -51,33 +52,48 @@ namespace dl
     {
         private InputLayer firstLayer;
         private ILayer outputLayer;
+        private readonly double learningRate;
+        private readonly int epoch;
         private readonly Func<IEnumerable<Tuple<double, double>>, double> errorFunction;
 
         public IEnumerable<ILayer> Layers { get; set; }
 
-        public Machine(Func<IEnumerable<Tuple<double, double>>, double> errorFunction, params ILayer[] layers)
+        public Machine(double learningRate, int epoch, Func<IEnumerable<Tuple<double, double>>, double> errorFunction, params ILayer[] layers)
         {
             // todo 先頭はInputLayerであること
             this.firstLayer = layers.First() as InputLayer;
             this.outputLayer = layers.Last();
+            this.learningRate = learningRate;
+            this.epoch = epoch;
             this.errorFunction = errorFunction;
             this.Layers = layers;
         }
 
         public void Learn(IEnumerable<ILearningData> learningData)
         {
-            // テストデータ分繰り返す
-            foreach (var data in learningData)
+            for (int i = 0; i < epoch; i++)
             {
-                // 処理する
-                var result = Test(data.Data).ToArray();
+                // テストデータ分繰り返す
+                foreach (var data in learningData)
+                {
+                    // 処理する
+                    var result = Test(data.Data).ToArray();
 
-                // 誤差関数通す
-                var errorValue = errorFunction(result.Zip(data.Expected, Tuple.Create));
-                
+                    // 各Nodeの入力重みを更新
+                    // todo 出力層以外も更新できるようにする今は出力層しか重みをもってないので出力層だけ考える
+                    foreach (var layer in this.Layers.Reverse())
+                    {
+                        foreach (var item in layer.Nodes.Zip(data.Expected, Tuple.Create))
+                        {
+                            var node = item.Item1;
+                            var expected = item.Item2;
+                            node.UpdateWeight(this.learningRate, expected);
+                        }
+                    }
 
-
-
+                    //// 誤差関数通す
+                    //var errorValue = errorFunction(result.Zip(data.Expected, Tuple.Create));
+                }
             }
         }
 

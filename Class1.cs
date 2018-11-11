@@ -155,7 +155,10 @@ namespace dl
         /// </summary>
         double GetValue();
 
-        
+        /// <summary>
+        /// 重みを更新
+        /// </summary>
+        void UpdateWeight(double learningRate, double expected);
     }
 
     public class Node : INode
@@ -178,6 +181,17 @@ namespace dl
             var o = this.activation(u);
             return o;
         }
+
+        public void UpdateWeight(double learningRate, double expected)
+        {
+            var o = this.GetValue();
+            // 入力Nodeごとに重みを更新
+            foreach (var link in Links)
+            {
+                var slope = learningRate * ( (o - expected)  * o * link.InputNode.GetValue());
+                link.Weight = link.Weight - slope;
+            }
+        }
     }
 
     public class ValueNode : INode
@@ -192,5 +206,10 @@ namespace dl
         }
 
         public double GetValue() => this.Value;
+
+        public void UpdateWeight(double learningRate, double expected)
+        {
+            // 固定値ノードは更新不要
+        }
     }
 }
