@@ -27,10 +27,11 @@ namespace dl
             Func<double, double> activationFunction = u => 1.0 / (1.0 + Math.Exp(-u));
 
             // 誤差関数
+            // Func<IEnumerable<Tuple<double, double>>, double> errorFunction = x => 0.5 * x.Sum(a => Math.Pow(a.Item1 - a.Item2, 2));
             Func<IEnumerable<Tuple<double, double>>, double> errorFunction = x => 0.5 * x.Sum(a => Math.Pow(a.Item1 - a.Item2, 2));
             // 入力レイヤ
             var inputLayer = new InputLayer(2);
-            var layer00 = new FullyConnectedLayer(inputLayer, activationFunction, 1);
+            var layer00 = new FullyConnectedLayer(inputLayer, activationFunction, 2);
 
             var machine = new Machine(0.01, 10000
                                     , errorFunction
@@ -41,17 +42,8 @@ namespace dl
                 from x in Enumerable.Range(1, 20)
                 from y in Enumerable.Range(1, 20)
                 let isTrue = x + (y * 2) < 30
-                select LearningData.New(new double[] { x, y }, isTrue ? new[] { 1.0 } : new[] { 0.0 }))
+                select LearningData.New(new double[] { x, y }, isTrue ? new[] { 1.0, 0.0 } : new[] { 0.0, 1.0 }))
                 .ToArray();
-            var trueCount = testData.Select(x => x.Expected.Sum()).Count(x => x > 0);
-            Console.WriteLine(trueCount / (double)testData.Length);
-
-            // 重みの初期値確認
-            var initweights = layer00.Nodes.SelectMany(x => x.Links).Select(x => x.Weight).ToArray();
-            foreach (var w in initweights)
-            {
-                Console.WriteLine(w);
-            }
 
             machine.Learn(testData.ToArray());
         }
@@ -133,8 +125,13 @@ namespace dl
                                 return errorFunction(rx.Zip(data.Expected, Tuple.Create));
                             };
 
-                            node.UpdateWeight(this.learningRate, ef);
+                            node.UpdateWeight(ef);
                         }
+                    }
+
+                    foreach (var node in this.Layers.SelectMany(x => x.Nodes))
+                    {
+                        node.Apply(this.learningRate);
                     }
                 }
 

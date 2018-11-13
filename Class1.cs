@@ -133,18 +133,22 @@ namespace dl
         /// </summary>
         double Weight { get; set; }
 
+        double Slope { get; set; }
         /// <summary>
         /// 参照するNode
         /// </summary>
         INode InputNode { get; }
-
     }
 
     public class NodeLink : INodeLink
     {
         public double Weight { get; set; }
 
+        public double Slope { get; set; }
+
         public INode InputNode { get; set; }
+
+
     }
 
     /// <summary>
@@ -162,10 +166,16 @@ namespace dl
         /// </summary>
         double GetValue();
 
+        double GetU();
+
+        void Apply(double learningRate);
+
+
         /// <summary>
         /// 重みを更新
         /// </summary>
-        void UpdateWeight(double learningRate, Func<double, double> ef);
+        void UpdateWeight(Func<double, double> ef);
+
     }
 
     public class Node : INode
@@ -174,37 +184,58 @@ namespace dl
 
         public IEnumerable<INodeLink> Links { get; set; }
 
+        private double? u;
+        private double? output;
+
         public Node(Func<double, double> activation, IEnumerable<INodeLink> links)
         {
             this.activation = activation;
             this.Links = links.ToArray();
+            this.u = null;
+            this.output = null;
         }
+
+        public void Apply(double learningRate)
+        {
+            this.u = null;
+            this.output = null;
+            foreach (var link in this.Links)
+            {
+                link.Weight -= link.Slope * learningRate;
+                link.Slope = 0.0;
+            }
+        }
+
 
         public double GetValue()
         {
-            var u = Links
-                .Select(link => link.InputNode.GetValue() * link.Weight)
-                .Sum();
-            var o = this.activation(u);
-            return o;
+            if (this.output.HasValue == false)
+                this.output = this.activation(GetU());
+            return output.Value;
         }
 
-        public void UpdateWeight(double learningRate, Func<double, double> ef)
+        public double GetU()
+        {
+            if (u.HasValue == false)
+                u = Links
+                    .Select(link => link.InputNode.GetValue() * link.Weight)
+                    .Sum();
+            return u.Value;
+        }
+
+        public void UpdateWeight(Func<double, double> ef)
         {
             // この層のアクティベーション前の合計値
-            var u = Links
-                .Select(link => link.InputNode.GetValue() * link.Weight)
-                .Sum();
+            var u = this.GetU();
             // この層の出力
-            var o = this.activation(u);
+            var o = this.GetValue();
 
             // 入力Nodeごとに重みを更新
             foreach (var link in Links)
             {
                 // 前の層の出力
                 var o0 = link.InputNode.GetValue();
-                var slope = ef.Derivative()(o) * this.activation.Derivative()(u) * o0;
-                link.Weight = link.Weight - learningRate * slope;
+                link.Slope = ef.Derivative()(o) * this.activation.Derivative()(u) * o0;
             }
         }
     }
@@ -221,8 +252,10 @@ namespace dl
         }
 
         public double GetValue() => this.Value;
+        public double GetU() => this.Value;
+        public void Apply(double learningRate) { }
 
-        public void UpdateWeight(double learningRate, Func<double, double> ef)
+        public void UpdateWeight(Func<double, double> ef)
         {
             // 固定値ノードは更新不要
         }
@@ -234,7 +267,6 @@ namespace dl
         public static Func<double, double> Derivative(this Func<double, double> f)
         {
             return x => (f(x + h) - f(x - h)) / (2.0 * h);
-
         }
     }
 }
