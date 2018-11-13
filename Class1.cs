@@ -165,7 +165,7 @@ namespace dl
         /// <summary>
         /// 重みを更新
         /// </summary>
-        void UpdateWeight(double learningRate, double expected);
+        void UpdateWeight(double learningRate, Func<double, double> ef);
     }
 
     public class Node : INode
@@ -189,21 +189,22 @@ namespace dl
             return o;
         }
 
-        public void UpdateWeight(double learningRate, double expected)
+        public void UpdateWeight(double learningRate, Func<double, double> ef)
         {
+            // この層のアクティベーション前の合計値
             var u = Links
                 .Select(link => link.InputNode.GetValue() * link.Weight)
                 .Sum();
-            var h = 1.0E-10;
+            // この層の出力
+            var o = this.activation(u);
+
             // 入力Nodeごとに重みを更新
             foreach (var link in Links)
             {
+                // 前の層の出力
                 var o0 = link.InputNode.GetValue();
-                var o = this.activation(u);
-                var du = this.activation(u + h) - o - h;
-
-                var slope = learningRate * ((o - expected) * (1 - o) * o * o0);
-                link.Weight = link.Weight - slope;
+                var slope = ef.Derivative()(o) * this.activation.Derivative()(u) * o0;
+                link.Weight = link.Weight - learningRate * slope;
             }
         }
     }
@@ -221,9 +222,19 @@ namespace dl
 
         public double GetValue() => this.Value;
 
-        public void UpdateWeight(double learningRate, double expected)
+        public void UpdateWeight(double learningRate, Func<double, double> ef)
         {
             // 固定値ノードは更新不要
+        }
+    }
+
+    public static class MathExtension
+    {
+        const double h = 1e-5;
+        public static Func<double, double> Derivative(this Func<double, double> f)
+        {
+            return x => (f(x + h) - f(x - h)) / (2.0 * h);
+
         }
     }
 }

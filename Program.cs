@@ -122,11 +122,18 @@ namespace dl
                     // todo 出力層以外も更新できるようにする今は出力層しか重みをもってないので出力層だけ考える
                     foreach (var layer in this.Layers.Skip(1).Reverse())
                     {
-                        foreach (var item in layer.Nodes.Zip(data.Expected, Tuple.Create))
+                        foreach (var item in layer.Nodes.Select((x, index) => new { x, index }))
                         {
-                            var node = item.Item1;
-                            var expected = item.Item2;
-                            node.UpdateWeight(this.learningRate, expected);
+                            var node = item.x;
+                            var index = item.index;
+                            Func<double, double> ef = (double x) =>
+                            {
+                                var rx = result.ToArray();
+                                rx[index] = x;
+                                return errorFunction(rx.Zip(data.Expected, Tuple.Create));
+                            };
+
+                            node.UpdateWeight(this.learningRate, ef);
                         }
                     }
                 }
