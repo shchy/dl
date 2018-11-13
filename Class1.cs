@@ -108,11 +108,18 @@ namespace dl
     {
         public static IEnumerable<INodeLink> MakeLink(this IEnumerable<INode> nodes)
         {
-            var r = new Random(DateTime.Now.Millisecond);
             return
-                new[] { new NodeLink { InputNode = new ValueNode{ Value = 1 }, Weight = r.NextDouble() } }
-                .Concat(nodes.Select(n => new NodeLink { InputNode = n, Weight = r.NextDouble()}))
+                new[] { new NodeLink { InputNode = new ValueNode { Value = 1 }, Weight = 0.01 * GetRandom() } }
+                .Concat(nodes.Select(n => new NodeLink { InputNode = n, Weight = 0.01 * GetRandom() }))
                 .ToArray();
+        }
+
+        public static double GetRandom()
+        {
+            var r = new Random(DateTime.Now.Millisecond);
+            var x = r.NextDouble();
+            var y = r.NextDouble();
+            return Math.Sqrt(-2.0 * Math.Log(x)) * Math.Cos(2.0 * Math.PI * y);
         }
     }
 
@@ -184,11 +191,18 @@ namespace dl
 
         public void UpdateWeight(double learningRate, double expected)
         {
-            var o = this.GetValue();
+            var u = Links
+                .Select(link => link.InputNode.GetValue() * link.Weight)
+                .Sum();
+            var h = 1.0E-10;
             // 入力Nodeごとに重みを更新
             foreach (var link in Links)
             {
-                var slope = learningRate * ( (o - expected)  * o * link.InputNode.GetValue());
+                var o0 = link.InputNode.GetValue();
+                var o = this.activation(u);
+                var du = this.activation(u + h) - o - h;
+
+                var slope = learningRate * ((o - expected) * (1 - o) * o * o0);
                 link.Weight = link.Weight - slope;
             }
         }
