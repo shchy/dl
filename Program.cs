@@ -23,14 +23,17 @@ namespace dl
             var inputLayer = new InputLayer(2);
             // 隠れレイヤ
             var layer00 = new FullyConnectedLayer(inputLayer, u => Math.Max(0, u), 4, DLF.UpdateWeight);
+            // 隠れレイヤ
+            var layer01 = new FullyConnectedLayer(inputLayer, u => Math.Max(0, u), 4, DLF.UpdateWeight);
             // 出力レイヤ
-            var layer01 = new FullyConnectedLayer(inputLayer, activationFunction, 2, DLF.UpdateWeightOfOutputLayer);
+            var layer02 = new FullyConnectedLayer(inputLayer, activationFunction, 2, DLF.UpdateWeightOfOutputLayer);
 
             var machine = new Machine(0.01, 10000
                                     , errorFunction
                                     , inputLayer
                                     , layer00
-                                    , layer01);
+                                    , layer01
+                                    , layer02);
             // 学習データを生成
             var testData = DLF.Shuffle(
                 from x in Enumerable.Range(1, 20)
