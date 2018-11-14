@@ -109,17 +109,9 @@ namespace dl
         public static IEnumerable<INodeLink> MakeLink(this IEnumerable<INode> nodes)
         {
             return
-                new[] { new NodeLink { InputNode = new ValueNode { Value = 1 }, Weight = 0.01 * GetRandom() } }
-                .Concat(nodes.Select(n => new NodeLink { InputNode = n, Weight = 0.01 * GetRandom() }))
+                new[] { new NodeLink { InputNode = new ValueNode { Value = 1 }, Weight = 0.01 * MathExtension.GetRandom() } }
+                .Concat(nodes.Select(n => new NodeLink { InputNode = n, Weight = 0.01 * MathExtension.GetRandom() }))
                 .ToArray();
-        }
-
-        public static double GetRandom()
-        {
-            var r = new Random(DateTime.Now.Millisecond);
-            var x = r.NextDouble();
-            var y = r.NextDouble();
-            return Math.Sqrt(-2.0 * Math.Log(x)) * Math.Cos(2.0 * Math.PI * y);
         }
     }
 
@@ -181,9 +173,7 @@ namespace dl
     public class Node : INode
     {
         private readonly Func<double, double> activation;
-
         public IEnumerable<INodeLink> Links { get; set; }
-
         private double? u;
         private double? output;
 
@@ -205,7 +195,6 @@ namespace dl
                 link.Slope = 0.0;
             }
         }
-
 
         public double GetValue()
         {
@@ -229,13 +218,15 @@ namespace dl
             var u = this.GetU();
             // この層の出力
             var o = this.GetValue();
+            // 前の層の重み計算で使える部分
+            var delta = ef.Derivative()(o) * this.activation.Derivative()(u);
 
             // 入力Nodeごとに重みを更新
             foreach (var link in Links)
             {
                 // 前の層の出力
                 var o0 = link.InputNode.GetValue();
-                link.Slope = ef.Derivative()(o) * this.activation.Derivative()(u) * o0;
+                link.Slope = delta * o0;
             }
         }
     }
@@ -263,10 +254,18 @@ namespace dl
 
     public static class MathExtension
     {
+        static Random r = new Random(DateTime.Now.Millisecond);
         const double h = 1e-5;
         public static Func<double, double> Derivative(this Func<double, double> f)
         {
             return x => (f(x + h) - f(x - h)) / (2.0 * h);
+        }
+
+        public static double GetRandom()
+        {
+            var x = r.NextDouble();
+            var y = r.NextDouble();
+            return Math.Sqrt(-2.0 * Math.Log(x)) * Math.Cos(2.0 * Math.PI * y);
         }
     }
 }
