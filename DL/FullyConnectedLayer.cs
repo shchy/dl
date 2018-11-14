@@ -7,12 +7,12 @@ namespace dl.DL
 {
     public class FullyConnectedLayer : ILayer
     {
-        private Action<ILayer, Func<IEnumerable<Tuple<double, double>>, double>, ILearningData> updateWeight;
+        private Action<ILayer, ILayer, Func<IEnumerable<Tuple<double, double>>, double>, ILearningData> updateWeight;
 
         public IEnumerable<INode> Nodes { get; set; }
         public Func<double, double> ActivationFunction { get; set; }
 
-        public FullyConnectedLayer(ILayer before, Func<double, double> activation, int nodeCount, Action<ILayer, Func<IEnumerable<Tuple<double, double>>, double>, ILearningData> updateWeight)
+        public FullyConnectedLayer(ILayer before, Func<double, double> activation, int nodeCount, Action<ILayer, ILayer, Func<IEnumerable<Tuple<double, double>>, double>, ILearningData> updateWeight)
         {
             this.updateWeight = updateWeight;
             this.ActivationFunction = activation;
@@ -25,9 +25,9 @@ namespace dl.DL
             this.Nodes = nodes.ToArray();
         }
 
-        public void UpdateWeight(Func<IEnumerable<Tuple<double, double>>, double> errorFunction, ILearningData data)
+        public void UpdateWeight(Func<IEnumerable<Tuple<double, double>>, double> errorFunction, ILearningData data, ILayer forwardLayer)
         {
-            this.updateWeight(this, errorFunction, data);
+            this.updateWeight(this, forwardLayer, errorFunction, data);
         }
     }
 }

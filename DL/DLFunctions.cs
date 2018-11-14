@@ -37,9 +37,11 @@ namespace dl.DL
             }
         }
 
+        /// 出力層の重み計算
         public static void UpdateWeightOfOutputLayer(ILayer layer
-                                             , Func<IEnumerable<Tuple<double, double>>, double> errorFunction
-                                             , ILearningData data)
+                                                    , ILayer _
+                                                    , Func<IEnumerable<Tuple<double, double>>, double> errorFunction
+                                                    , ILearningData data)
         {
             var result = layer.Nodes.Select(x => x.GetValue()).ToArray();
             foreach (var item in layer.Nodes.Select((x, index) => new { x, index }))
@@ -60,6 +62,39 @@ namespace dl.DL
                 var o = node.GetValue();
                 // 前の層の重み計算で使える部分
                 node.Delta = ef.Derivative()(o) * layer.ActivationFunction.Derivative()(u);
+
+                // 入力Nodeごとに重みを更新
+                foreach (var link in node.Links)
+                {
+                    // 前の層の出力
+                    var o0 = link.InputNode.GetValue();
+                    // 更新用の傾きを覚えておく
+                    link.Slope = node.Delta * o0;
+                }
+            }
+        }
+
+        /// 出力層以外の重み計算
+        public static void UpdateWeight(ILayer layer
+                                        , ILayer forwardLayer
+                                        , Func<IEnumerable<Tuple<double, double>>, double> errorFunction
+                                        , ILearningData data)
+        {
+            foreach (var node in layer.Nodes)
+            {
+                // 活性化前の値
+                var u = node.GetU();
+
+                // 先の層の計算結果を引き継ぐ
+                var forwardCache = (
+                    from n in forwardLayer.Nodes
+                    let delta = n.Delta
+                    let l = n.Links.FirstOrDefault(l => l.InputNode == node)
+                    where l != null
+                    select delta * l.Weight).Sum();
+
+                // 前の層の重み計算で使える部分
+                node.Delta = forwardCache * layer.ActivationFunction.Derivative()(u);
 
                 // 入力Nodeごとに重みを更新
                 foreach (var link in node.Links)

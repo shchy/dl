@@ -18,7 +18,7 @@ namespace dl.DL
             this.Nodes = inputNodes.ToArray();
         }
 
-        public void UpdateWeight(Func<IEnumerable<Tuple<double, double>>, double> errorFunction, ILearningData data) { }
+        public void UpdateWeight(Func<IEnumerable<Tuple<double, double>>, double> errorFunction, ILearningData data, ILayer forwardLayer) { }
 
         public void UpdateData(IEnumerable<double> data)
         {

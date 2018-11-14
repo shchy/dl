@@ -48,10 +48,11 @@ namespace dl.DL
                     errorValue += e;
 
                     // 各Nodeの入力重みを更新
-                    // todo 出力層以外も更新できるようにする今は出力層しか重みをもってないので出力層だけ考える
+                    ILayer forwardLayer = null;
                     foreach (var layer in this.Layers.Skip(1).Reverse())
                     {
-                        layer.UpdateWeight(errorFunction, data);
+                        layer.UpdateWeight(errorFunction, data, forwardLayer);
+                        forwardLayer = layer;
                     }
 
                     foreach (var node in this.Layers.SelectMany(x => x.Nodes))
@@ -67,8 +68,8 @@ namespace dl.DL
                 }
                 if (i % 100 == 0)
                 {
-                    Console.WriteLine($"誤差:{(errorValue / k).ToString("0.00000")}");
-                    Console.WriteLine($"最大誤差:{(errorValueMax).ToString("0.00000")}");
+                    Console.WriteLine($"{i.ToString("00000")} 誤差   :{(errorValue / k).ToString("0.00000")}");
+                    Console.WriteLine($"{i.ToString("00000")} 最大誤差:{(errorValueMax).ToString("0.00000")}");
                 }
             }
             Console.WriteLine($"最小誤差:{(errorValueMin).ToString("0.00000")} 最小誤差Index:{(errorValueMinIndex)}");

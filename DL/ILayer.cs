@@ -14,7 +14,7 @@ namespace dl.DL
 
         Func<double, double> ActivationFunction { get; }
 
-        void UpdateWeight(Func<IEnumerable<Tuple<double, double>>, double> errorFunction, ILearningData data);
+        void UpdateWeight(Func<IEnumerable<Tuple<double, double>>, double> errorFunction, ILearningData data, ILayer forwardLayer);
     }
 
     public static class LayerFunction

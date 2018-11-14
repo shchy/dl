@@ -21,13 +21,16 @@ namespace dl
             Func<IEnumerable<Tuple<double, double>>, double> errorFunction = x => 0.5 * x.Sum(a => Math.Pow(a.Item1 - a.Item2, 2));
             // 入力レイヤ
             var inputLayer = new InputLayer(2);
+            // 隠れレイヤ
+            var layer00 = new FullyConnectedLayer(inputLayer, u => Math.Max(0, u), 4, DLF.UpdateWeight);
             // 出力レイヤ
-            var layer00 = new FullyConnectedLayer(inputLayer, activationFunction, 2, DLF.UpdateWeightOfOutputLayer);
+            var layer01 = new FullyConnectedLayer(inputLayer, activationFunction, 2, DLF.UpdateWeightOfOutputLayer);
 
             var machine = new Machine(0.01, 10000
                                     , errorFunction
                                     , inputLayer
-                                    , layer00);
+                                    , layer00
+                                    , layer01);
             // 学習データを生成
             var testData = DLF.Shuffle(
                 from x in Enumerable.Range(1, 20)
