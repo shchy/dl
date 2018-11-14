@@ -66,11 +66,17 @@ namespace dl
         /// レイヤ内のノード達
         /// </summary>
         IEnumerable<INode> Nodes { get; }
+
+        Func<double, double> ActivationFunction { get; }
+
+        void UpdateWeight(Func<IEnumerable<Tuple<double, double>>, double> errorFunction, ILearningData data);
     }
 
     public class InputLayer : ILayer
     {
         public IEnumerable<INode> Nodes { get; set; }
+
+        public Func<double, double> ActivationFunction { get; } = x => x;
 
         public InputLayer(int inputDataSize)
         {
@@ -78,6 +84,8 @@ namespace dl
             var inputNodes = Enumerable.Range(0, inputDataSize).Select(_ => new ValueNode());
             this.Nodes = inputNodes.ToArray();
         }
+
+        public void UpdateWeight(Func<IEnumerable<Tuple<double, double>>, double> errorFunction, ILearningData data) { }
 
         public void UpdateData(IEnumerable<double> data)
         {
@@ -91,10 +99,16 @@ namespace dl
 
     public class FullyConnectedLayer : ILayer
     {
-        public IEnumerable<INode> Nodes { get; set; }
+        private Action<ILayer, Func<IEnumerable<Tuple<double, double>>, double>, ILearningData> updateWeight;
 
-        public FullyConnectedLayer(ILayer before, Func<double, double> activation, int nodeCount)
+        public IEnumerable<INode> Nodes { get; set; }
+        public Func<double, double> ActivationFunction { get; set; }
+
+        public FullyConnectedLayer(ILayer before, Func<double, double> activation, int nodeCount, Action<ILayer, Func<IEnumerable<Tuple<double, double>>, double>, ILearningData> updateWeight)
         {
+            this.updateWeight = updateWeight;
+            this.ActivationFunction = activation;
+
             var nodes =
                 from i in Enumerable.Range(0, nodeCount)
                 let nodeLink = before.Nodes.MakeLink()
@@ -102,7 +116,13 @@ namespace dl
                 select node;
             this.Nodes = nodes.ToArray();
         }
+
+        public void UpdateWeight(Func<IEnumerable<Tuple<double, double>>, double> errorFunction, ILearningData data)
+        {
+            this.updateWeight(this, errorFunction, data);
+        }
     }
+
 
     public static class LayerFunction
     {
@@ -160,14 +180,8 @@ namespace dl
 
         double GetU();
 
+        double Delta { get; set; }
         void Apply(double learningRate);
-
-
-        /// <summary>
-        /// 重みを更新
-        /// </summary>
-        void UpdateWeight(Func<double, double> ef);
-
     }
 
     public class Node : INode
@@ -176,6 +190,7 @@ namespace dl
         public IEnumerable<INodeLink> Links { get; set; }
         private double? u;
         private double? output;
+        public double Delta { get; set; }
 
         public Node(Func<double, double> activation, IEnumerable<INodeLink> links)
         {
@@ -189,6 +204,7 @@ namespace dl
         {
             this.u = null;
             this.output = null;
+            this.Delta = 0.0;
             foreach (var link in this.Links)
             {
                 link.Weight -= link.Slope * learningRate;
@@ -211,30 +227,12 @@ namespace dl
                     .Sum();
             return u.Value;
         }
-
-        public void UpdateWeight(Func<double, double> ef)
-        {
-            // この層のアクティベーション前の合計値
-            var u = this.GetU();
-            // この層の出力
-            var o = this.GetValue();
-            // 前の層の重み計算で使える部分
-            var delta = ef.Derivative()(o) * this.activation.Derivative()(u);
-
-            // 入力Nodeごとに重みを更新
-            foreach (var link in Links)
-            {
-                // 前の層の出力
-                var o0 = link.InputNode.GetValue();
-                link.Slope = delta * o0;
-            }
-        }
     }
 
     public class ValueNode : INode
     {
         public double Value { get; set; }
-
+        public double Delta { get; set; }
         public IEnumerable<INodeLink> Links => Enumerable.Empty<INodeLink>();
 
         public ValueNode()
@@ -246,10 +244,6 @@ namespace dl
         public double GetU() => this.Value;
         public void Apply(double learningRate) { }
 
-        public void UpdateWeight(Func<double, double> ef)
-        {
-            // 固定値ノードは更新不要
-        }
     }
 
     public static class MathExtension
