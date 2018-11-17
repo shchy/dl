@@ -23,14 +23,20 @@ namespace dl.DL
 
         public void Apply(double learningRate)
         {
+            Reset();
+            foreach (var link in this.Links)
+            {
+                link.Weight -= (link.Slope / link.UpdateCount) * learningRate;
+                link.Slope = 0.0;
+                link.UpdateCount = 0;
+            }
+        }
+
+        public void Reset()
+        {
             this.u = null;
             this.output = null;
             this.Delta = 0.0;
-            foreach (var link in this.Links)
-            {
-                link.Weight -= link.Slope * learningRate;
-                link.Slope = 0.0;
-            }
         }
 
         public double GetValue()

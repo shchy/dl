@@ -21,7 +21,7 @@ namespace dl.DL
         double GetValue();
 
         double GetU();
-
+        void Reset();
         double Delta { get; set; }
         void Apply(double learningRate);
     }

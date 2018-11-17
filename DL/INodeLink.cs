@@ -16,6 +16,9 @@ namespace dl.DL
         double Weight { get; set; }
 
         double Slope { get; set; }
+
+
+        int UpdateCount { get; set; }
         /// <summary>
         /// 参照するNode
         /// </summary>

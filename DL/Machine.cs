@@ -11,17 +11,19 @@ namespace dl.DL
         private ILayer outputLayer;
         private readonly double learningRate;
         private readonly int epoch;
+        private readonly int miniBatch;
         private readonly Func<IEnumerable<Tuple<double, double>>, double> errorFunction;
 
         public IEnumerable<ILayer> Layers { get; set; }
 
-        public Machine(double learningRate, int epoch, Func<IEnumerable<Tuple<double, double>>, double> errorFunction, params ILayer[] layers)
+        public Machine(double learningRate, int epoch, int miniBatch, Func<IEnumerable<Tuple<double, double>>, double> errorFunction, params ILayer[] layers)
         {
             // todo 先頭はInputLayerであること
             this.firstLayer = layers.First() as InputLayer;
             this.outputLayer = layers.Last();
             this.learningRate = learningRate;
             this.epoch = epoch;
+            this.miniBatch = miniBatch;
             this.errorFunction = errorFunction;
             this.Layers = layers;
         }
@@ -36,8 +38,11 @@ namespace dl.DL
                 var errorValue = 0.0;
                 var errorValueMax = 0.0;
 
+                var shuffled = DLF.Shuffle(learningData);
+                var dataCount = 0;
+
                 // テストデータ分繰り返す
-                foreach (var data in learningData)
+                foreach (var data in shuffled)
                 {
                     // 処理する
                     var result = Test(data.Data).ToArray();
@@ -55,9 +60,18 @@ namespace dl.DL
                         forwardLayer = layer;
                     }
 
+                    dataCount = (dataCount + 1) % (this.miniBatch);
+
                     foreach (var node in this.Layers.SelectMany(x => x.Nodes))
                     {
-                        node.Apply(this.learningRate);
+                        if (dataCount == 0)
+                        {
+                            node.Apply(this.learningRate);
+                        }
+                        else
+                        {
+                            node.Reset();
+                        }
                     }
                 }
 

@@ -23,17 +23,12 @@ namespace dl.DL
 
         public static IEnumerable<T> Shuffle<T>(IEnumerable<T> xs)
         {
-            if (xs.Any() == false)
-                yield break;
-
             var array = xs.ToArray();
-            var len = array.Length;
-            var index = r.Next(len);
-            yield return array[index];
-            var remains = Shuffle(array.Where((x, i) => i != index));
-            foreach (var item in remains)
+            var n = array.Length;
+            for (var i = n; i > 0; i--)
             {
-                yield return item;
+                var next = r.Next(i - 1);
+                yield return array[next];
             }
         }
 
@@ -69,7 +64,8 @@ namespace dl.DL
                     // 前の層の出力
                     var o0 = link.InputNode.GetValue();
                     // 更新用の傾きを覚えておく
-                    link.Slope = node.Delta * o0;
+                    link.Slope += node.Delta * o0;
+                    link.UpdateCount++;
                 }
             }
         }
@@ -102,7 +98,8 @@ namespace dl.DL
                     // 前の層の出力
                     var o0 = link.InputNode.GetValue();
                     // 更新用の傾きを覚えておく
-                    link.Slope = node.Delta * o0;
+                    link.Slope += node.Delta * o0;
+                    link.UpdateCount++;
                 }
             }
         }

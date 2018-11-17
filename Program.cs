@@ -20,7 +20,7 @@ namespace dl
             // Func<IEnumerable<Tuple<double, double>>, double> errorFunction = x => 0.5 * x.Sum(a => Math.Pow(a.Item1 - a.Item2, 2));
             Func<IEnumerable<Tuple<double, double>>, double> errorFunction = x => 0.5 * x.Sum(a => Math.Pow(a.Item1 - a.Item2, 2));
             // 入力レイヤ
-            var inputLayer = new InputLayer(2);
+            var inputLayer = new InputLayer(3);
             // 隠れレイヤ
             var layer00 = new FullyConnectedLayer(inputLayer, u => Math.Max(0, u), 4, DLF.UpdateWeight);
             // 隠れレイヤ
@@ -28,19 +28,20 @@ namespace dl
             // 出力レイヤ
             var layer02 = new FullyConnectedLayer(inputLayer, activationFunction, 2, DLF.UpdateWeightOfOutputLayer);
 
-            var machine = new Machine(0.01, 10000
+            var machine = new Machine(0.01, 1000, 10
                                     , errorFunction
                                     , inputLayer
                                     , layer00
                                     , layer01
                                     , layer02);
             // 学習データを生成
-            var testData = DLF.Shuffle(
+            var testData =
                 from x in Enumerable.Range(1, 20)
                 from y in Enumerable.Range(1, 20)
+                from z in Enumerable.Range(1, 20)
                 let isTrue = x + (y * 2) < 30
-                select LearningData.New(new double[] { x, y }, isTrue ? new[] { 1.0, 0.0 } : new[] { 0.0, 1.0 }))
-                .ToArray();
+                select LearningData.New(new double[] { x, y, z }, isTrue ? new[] { 1.0, 0.0 } : new[] { 0.0, 1.0 });
+
 
             machine.Learn(testData.ToArray());
 

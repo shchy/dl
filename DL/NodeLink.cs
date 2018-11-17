@@ -10,7 +10,7 @@ namespace dl.DL
         public double Weight { get; set; }
 
         public double Slope { get; set; }
-
+        public int UpdateCount { get; set; }
         public INode InputNode { get; set; }
 
 

@@ -16,6 +16,7 @@ namespace dl.DL
             this.Value = 0.0;
         }
 
+        public void Reset() { }
         public double GetValue() => this.Value;
         public double GetU() => this.Value;
         public void Apply(double learningRate) { }
