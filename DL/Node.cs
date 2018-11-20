@@ -7,14 +7,16 @@ namespace dl.DL
 {
     public class Node : INode
     {
-        private readonly Func<double, double> activation;
+        public int Index { get; set; }
         public IEnumerable<INodeLink> Links { get; set; }
+        private readonly Func<INode, double, double> activation;
         private double? u;
         private double? output;
         public double Delta { get; set; }
 
-        public Node(Func<double, double> activation, IEnumerable<INodeLink> links)
+        public Node(int index, Func<INode, double, double> activation, IEnumerable<INodeLink> links)
         {
+            this.Index = index;
             this.activation = activation;
             this.Links = links.ToArray();
             this.u = null;
@@ -42,7 +44,7 @@ namespace dl.DL
         public double GetValue()
         {
             if (this.output.HasValue == false)
-                this.output = this.activation(GetU());
+                this.output = this.activation(this, GetU());
             return output.Value;
         }
 

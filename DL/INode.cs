@@ -10,6 +10,7 @@ namespace dl.DL
     /// </summary>
     public interface INode
     {
+        int Index { get; }
         /// <summary>
         /// 入力Nodeのリスト
         /// </summary>

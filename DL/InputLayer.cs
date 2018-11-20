@@ -9,12 +9,12 @@ namespace dl.DL
     {
         public IEnumerable<INode> Nodes { get; set; }
 
-        public Func<double, double> ActivationFunction { get; } = x => x;
+        public Func<INode, double, double> ActivationFunction { get; } = (_,x) => x;
 
         public InputLayer(int inputDataSize)
         {
             // 固定値Nodeを作成
-            var inputNodes = Enumerable.Range(0, inputDataSize).Select(_ => new ValueNode());
+            var inputNodes = Enumerable.Range(0, inputDataSize).Select(i => new ValueNode(i));
             this.Nodes = inputNodes.ToArray();
         }
 

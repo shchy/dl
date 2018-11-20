@@ -7,12 +7,14 @@ namespace dl.DL
 {
     public class ValueNode : INode
     {
+        public int Index { get; set; }
         public double Value { get; set; }
         public double Delta { get; set; }
         public IEnumerable<INodeLink> Links => Enumerable.Empty<INodeLink>();
 
-        public ValueNode()
+        public ValueNode(int index)
         {
+            this.Index = index;
             this.Value = 0.0;
         }
 

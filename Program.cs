@@ -19,11 +19,11 @@ namespace dl
             // 隠れレイヤ
             var layer00 = new FullyConnectedLayer(inputLayer, DLF.ReLU, 4, DLF.UpdateWeight);
             // 隠れレイヤ
-            var layer01 = new FullyConnectedLayer(inputLayer, DLF.ReLU, 4, DLF.UpdateWeight);
+            var layer01 = new FullyConnectedLayer(layer00, DLF.ReLU, 2, DLF.UpdateWeight);
             // 出力レイヤ
-            var layer02 = new FullyConnectedLayer(inputLayer, DLF.Sigmoid, 2, DLF.UpdateWeightOfOutputLayer);
+            var layer02 = new FullyConnectedLayer(layer01, DLF.Sigmoid, 2, DLF.UpdateWeightOfOutputLayer);
 
-            var machine = new Machine(0.1, 10000, 10
+            var machine = new Machine(0.01, 10000, 10
                                     , errorFunction
                                     , inputLayer
                                     , layer00
@@ -42,7 +42,6 @@ namespace dl
 
             machine.Learn(testData.ToArray());
             machine.Validate(validData);
-
         }
     }
 }

@@ -32,9 +32,23 @@ namespace dl.DL
             }
         }
 
-        public static double ReLU(double x) => Math.Max(0, x);
+        public static double ReLU(INode _, double x) => Math.Max(0, x);
 
-        public static double Sigmoid(double x) => 1.0 / (1.0 + Math.Exp(-x));
+        public static double Sigmoid(INode _, double x) => 1.0 / (1.0 + Math.Exp(-x));
+
+        public static double SoftMax(INode node, double x)
+        {
+            var inputs = (
+                from link in node.Links.Skip(1)
+                let yi = link.InputNode.GetValue()// * link.Weight
+                select Math.Exp(yi))
+                .ToArray();
+            var y = inputs[node.Index];
+            var sum = inputs.Sum();
+
+            return y / sum;
+
+        }
 
         /// 出力層の重み計算
         public static void UpdateWeightOfOutputLayer(ILayer layer
@@ -60,7 +74,7 @@ namespace dl.DL
                 // 出力
                 var o = node.GetValue();
                 // 前の層の重み計算で使える部分
-                node.Delta = ef.Derivative()(o) * layer.ActivationFunction.Derivative()(u);
+                node.Delta = ef.Derivative()(o) * ((Func<double,double>)(x => layer.ActivationFunction(node,x))).Derivative()(u);
 
                 // 入力Nodeごとに重みを更新
                 foreach (var link in node.Links)
@@ -94,7 +108,7 @@ namespace dl.DL
                     select delta * l.Weight).Sum();
 
                 // 前の層の重み計算で使える部分
-                node.Delta = forwardCache * layer.ActivationFunction.Derivative()(u);
+                node.Delta = forwardCache * ((Func<double, double>)(x => layer.ActivationFunction(node, x))).Derivative()(u);
 
                 // 入力Nodeごとに重みを更新
                 foreach (var link in node.Links)
