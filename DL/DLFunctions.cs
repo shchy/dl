@@ -32,6 +32,10 @@ namespace dl.DL
             }
         }
 
+        public static double ReLU(double x) => Math.Max(0, x);
+
+        public static double Sigmoid(double x) => 1.0 / (1.0 + Math.Exp(-x));
+
         /// 出力層の重み計算
         public static void UpdateWeightOfOutputLayer(ILayer layer
                                                     , ILayer _

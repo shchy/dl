@@ -18,6 +18,12 @@ namespace dl.DL
         /// <param name="learningData"></param>
         /// <returns></returns>
         void Learn(IEnumerable<ILearningData> learningData);
+        /// <summary>
+        /// 検証
+        /// </summary>
+        /// <param name="learningData"></param>
+        void Validate(IEnumerable<ILearningData> learningData);
+
 
         /// <summary>
         /// 判断さす
@@ -25,5 +31,6 @@ namespace dl.DL
         /// <param name="data"></param>
         /// <returns></returns>
         IEnumerable<double> Test(IEnumerable<double> data);
+
     }
 }
