@@ -8,15 +8,19 @@ namespace dl.DL
     public class Node : INode
     {
         public int Index { get; set; }
+
+        private readonly Func<INode, double> calcValue;
+
         public IEnumerable<INodeLink> Links { get; set; }
         private readonly Func<INode, double, double> activation;
         private double? u;
         private double? output;
         public double Delta { get; set; }
 
-        public Node(int index, Func<INode, double, double> activation, IEnumerable<INodeLink> links)
+        public Node(int index, Func<INode, double> calcValue, Func<INode, double, double> activation, IEnumerable<INodeLink> links)
         {
             this.Index = index;
+            this.calcValue = calcValue;
             this.activation = activation;
             this.Links = links.ToArray();
             this.u = null;
@@ -51,9 +55,7 @@ namespace dl.DL
         public double GetU()
         {
             if (u.HasValue == false)
-                u = Links
-                    .Select(link => link.InputNode.GetValue() * link.Weight)
-                    .Sum();
+                u = this.calcValue(this);
             return u.Value;
         }
     }

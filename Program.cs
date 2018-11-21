@@ -11,17 +11,19 @@ namespace dl
         static void Main(string[] args)
         {
             Console.WriteLine("Hello World!");
-            
+
             // 誤差関数
-            Func<IEnumerable<Tuple<double, double>>, double> errorFunction = x => 0.5 * x.Sum(a => Math.Pow(a.Item1 - a.Item2, 2));
+            // Func<IEnumerable<Tuple<double, double>>, double> errorFunction = x => 0.5 * x.Sum(a => Math.Pow(a.Item1 - a.Item2, 2));
+            Func<IEnumerable<Tuple<double, double>>, double> errorFunction = x => -x.Sum(a => a.Item2 * Math.Log(a.Item1 + 1e-7));// + (1 - a.Item2) * Math.Log(1 - a.Item1));
+
             // 入力レイヤ
             var inputLayer = new InputLayer(3);
             // 隠れレイヤ
-            var layer00 = new FullyConnectedLayer(inputLayer, DLF.ReLU, 4, DLF.UpdateWeight);
+            var layer00 = new FullyConnectedLayer(inputLayer, Test, DLF.ReLU, 4, DLF.UpdateWeight);
             // 隠れレイヤ
-            var layer01 = new FullyConnectedLayer(layer00, DLF.ReLU, 2, DLF.UpdateWeight);
+            var layer01 = new FullyConnectedLayer(layer00, Test, DLF.ReLU, 2, DLF.UpdateWeight);
             // 出力レイヤ
-            var layer02 = new FullyConnectedLayer(layer01, DLF.Sigmoid, 2, DLF.UpdateWeightOfOutputLayer);
+            var layer02 = new FullyConnectedLayer(layer01, Test, DLF.Sigmoid, 2, DLF.UpdateWeightOfOutputLayer);
 
             var machine = new Machine(0.01, 10000, 10
                                     , errorFunction
@@ -42,6 +44,14 @@ namespace dl
 
             machine.Learn(testData.ToArray());
             machine.Validate(validData);
+        }
+
+        static double Test(INode node)
+        {
+            return
+                node.Links
+                    .Select(link => link.InputNode.GetValue() * link.Weight)
+                    .Sum();
         }
     }
 }
