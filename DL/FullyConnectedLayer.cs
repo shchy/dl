@@ -9,15 +9,15 @@ namespace dl.DL
     {
         public IEnumerable<INode> Nodes { get; set; }
         public Func<IEnumerable<double>, IEnumerable<double>> ActivationFunction { get; set; }
-        public Func<INode, double> CalcFunction { get; }
+        public Action<ILayer, ILayer, Func<IEnumerable<Tuple<double, double>>, double>, ILearningData> UpdateWeightFunction { get; private set; }
 
         public FullyConnectedLayer(ILayer before
-                                , Func<INode, double> calcValue
+                                , int nodeCount
                                 , Func<IEnumerable<double>, IEnumerable<double>> activation
-                                , int nodeCount)
+                                , Action<ILayer, ILayer, Func<IEnumerable<Tuple<double, double>>, double>, ILearningData> updateWeightFunction)
         {
             this.ActivationFunction = activation;
-            this.CalcFunction = calcValue;
+            this.UpdateWeightFunction = updateWeightFunction;
 
             var nodes =
                 from i in Enumerable.Range(0, nodeCount)

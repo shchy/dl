@@ -120,7 +120,7 @@ namespace dl.DL
             foreach (var l in this.Layers.Skip(1))
             {
                 // uを求める
-                var ux = l.Nodes.Select(l.CalcFunction).ToArray();
+                var ux = l.Nodes.Select(DLF.CalcFunction).ToArray();
                 // oを求める
                 var ox = l.ActivationFunction(ux);
                 // Nodeを更新
@@ -137,15 +137,11 @@ namespace dl.DL
 
         void UpdateWeight(ILearningData data)
         {
-            // 出力層の重み更新
-            var outputLayer = this.Layers.Reverse().First();
-            DLF.UpdateWeightOfOutputLayer(outputLayer, null, this.errorFunction, data);
-
             // 各Nodeの入力重みを更新
             ILayer forwardLayer = outputLayer;
-            foreach (var layer in this.Layers.Skip(1).Reverse().Skip(1))
+            foreach (var layer in this.Layers.Skip(1).Reverse())
             {
-                DLF.UpdateWeight(layer, forwardLayer, errorFunction, data);
+                layer.UpdateWeightFunction(layer, forwardLayer, errorFunction, data);
                 forwardLayer = layer;
             }
         }

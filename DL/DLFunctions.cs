@@ -36,17 +36,12 @@ namespace dl.DL
 
         public static IEnumerable<double> Sigmoid(IEnumerable<double> xs) => xs.Select(x => 1.0 / (1.0 + Math.Exp(-x))).ToArray();
 
-        public static double SoftMax(INode node, double x)
+        public static IEnumerable<double> SoftMax(IEnumerable<double> xs)
         {
-            var inputs = (
-                from link in node.Links.Skip(1)
-                let yi = link.InputNode.GetValue()// * link.Weight
-                select Math.Exp(yi))
-                .ToArray();
-            var y = inputs[node.Index];
-            var sum = inputs.Sum();
-
-            return y / sum;
+            var max = xs.Max();
+            var exps = xs.Select(x => Math.Exp(x - max)).ToArray();
+            var sum = exps.Sum();
+            return exps.Select(x => x / sum).ToArray();
 
         }
 
@@ -57,7 +52,7 @@ namespace dl.DL
                                                     , ILearningData data)
         {
             var ox = layer.Nodes.Select(x => x.GetValue()).ToArray();
-            var ux = layer.Nodes.Select(layer.CalcFunction).ToArray();
+            var ux = layer.Nodes.Select(CalcFunction).ToArray();
 
             foreach (var item in layer.Nodes.Select((x, index) => new { x, index }))
             {
@@ -80,7 +75,7 @@ namespace dl.DL
                 };
 
                 // 活性化前の値
-                var u = layer.CalcFunction(node);   // todo cache
+                var u = CalcFunction(node);   // todo cache
                 // 出力
                 var o = node.GetValue();
                 // 前の層の重み計算で使える部分
@@ -99,13 +94,48 @@ namespace dl.DL
             }
         }
 
+        public static double CalcFunction(INode node)
+        {
+            return
+                node.Links
+                    .Select(link => link.InputNode.GetValue() * link.Weight)
+                    .Sum();
+        }
+        public static void UpdateWeightOfSoftMax(ILayer layer
+                                                    , ILayer _
+                                                    , Func<IEnumerable<Tuple<double, double>>, double> errorFunction
+                                                    , ILearningData data)
+        {
+            var ys = layer.Nodes.Select(x => x.GetValue()).ToArray();
+            var ts = data.Expected.ToArray();
+            var deltas = ys.Zip(ts, (y, t) => (y - t)).ToArray();
+
+            foreach (var item in layer.Nodes.Zip(deltas, Tuple.Create))
+            {
+                var node = item.Item1;
+                var delta = item.Item2;
+
+                // 前の層の重み計算で使える部分
+                node.Delta = delta;
+                // 入力Nodeごとに重みを更新
+                foreach (var link in node.Links)
+                {
+                    // 前の層の出力
+                    var o0 = link.InputNode.GetValue();
+                    // 更新用の傾きを覚えておく
+                    link.Slope += node.Delta * o0;
+                    link.UpdateCount++;
+                }
+            }
+        }
+
         /// 出力層以外の重み計算
         public static void UpdateWeight(ILayer layer
                                         , ILayer forwardLayer
                                         , Func<IEnumerable<Tuple<double, double>>, double> errorFunction
                                         , ILearningData data)
         {
-            var ux = layer.Nodes.Select(layer.CalcFunction).ToArray();
+            var ux = layer.Nodes.Select(CalcFunction).ToArray();
 
             foreach (var item in layer.Nodes.Select((x, index) => new { x, index }))
             {
@@ -121,7 +151,7 @@ namespace dl.DL
                 };
 
                 // 活性化前の値
-                var u = layer.CalcFunction(node);
+                var u = CalcFunction(node);
 
                 // 先の層の計算結果を引き継ぐ
                 var forwardCache = (

@@ -9,7 +9,8 @@ namespace dl.DL
     {
         public IEnumerable<INode> Nodes { get; set; }
         public Func<IEnumerable<double>, IEnumerable<double>> ActivationFunction { get; } = (x) => x;
-        public Func<INode, double> CalcFunction { get; } = _ => 0.0;
+
+        public Action<ILayer, ILayer, Func<IEnumerable<Tuple<double, double>>, double>, ILearningData> UpdateWeightFunction { get; } = (_1, _2, _3, _4) => { };
 
         public InputLayer(int inputDataSize)
         {
