@@ -21,9 +21,9 @@ namespace dl
             // 隠れレイヤ
             var layer00 = new FullyConnectedLayer(inputLayer, 4, DLF.ReLU, DLF.UpdateWeight);
             // 隠れレイヤ
-            var layer01 = new FullyConnectedLayer(layer00, 2, DLF.ReLU, DLF.UpdateWeight);
+            var layer01 = new FullyConnectedLayer(layer00, 4, DLF.ReLU, DLF.UpdateWeight);
             // 出力レイヤ
-            var layer02 = new SoftmaxLayer(layer01, 2);
+            var layer02 = new SoftmaxLayer(layer01, 3);
 
             var machine = new Machine(0.01, 10000, 10
                                     , errorFunction
@@ -36,8 +36,11 @@ namespace dl
                 from x in Enumerable.Range(1, 8)
                 from y in Enumerable.Range(1, 8)
                 from z in Enumerable.Range(1, 8)
-                let isTrue = x + (y * 2) + z < 16
-                select LearningData.New(new double[] { x, y, z }, isTrue ? new[] { 1.0, 0.0 } : new[] { 0.0, 1.0 })).ToArray();
+                let v = x + (y * 2) + z
+                select LearningData.New(new double[] { x, y, z }
+                        , v < 16 ? new[] { 1.0, 0.0, 0.0 }
+                        : v < 20 ? new[] { 0.0, 1.0, 0.0 }
+                        : new[] { 0.0, 0.0, 1.0 })).ToArray();
 
             var validData = testData.Skip(testData.Length / 2).ToArray();
             testData = testData.Take(testData.Length / 2).ToArray();
