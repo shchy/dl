@@ -8,23 +8,18 @@ namespace dl.DL
     public class Node : INode
     {
         public int Index { get; set; }
-
-        private readonly Func<INode, double> calcValue;
-
         public IEnumerable<INodeLink> Links { get; set; }
-        private readonly Func<INode, double, double> activation;
-        private double? u;
-        private double? output;
+        private readonly Func<IEnumerable<double>, IEnumerable<double>> activation;
+
+        private double output;
         public double Delta { get; set; }
 
-        public Node(int index, Func<INode, double> calcValue, Func<INode, double, double> activation, IEnumerable<INodeLink> links)
+        public Node(int index, Func<IEnumerable<double>, IEnumerable<double>> activation, IEnumerable<INodeLink> links)
         {
             this.Index = index;
-            this.calcValue = calcValue;
             this.activation = activation;
             this.Links = links.ToArray();
-            this.u = null;
-            this.output = null;
+            this.output = 0.0;
         }
 
         public void Apply(double learningRate)
@@ -40,23 +35,12 @@ namespace dl.DL
 
         public void Reset()
         {
-            this.u = null;
-            this.output = null;
+            this.output = 0.0;
             this.Delta = 0.0;
         }
 
-        public double GetValue()
-        {
-            if (this.output.HasValue == false)
-                this.output = this.activation(this, GetU());
-            return output.Value;
-        }
+        public double GetValue() => this.output;
 
-        public double GetU()
-        {
-            if (u.HasValue == false)
-                u = this.calcValue(this);
-            return u.Value;
-        }
+        public void SetValue(double v) => this.output = v;
     }
 }

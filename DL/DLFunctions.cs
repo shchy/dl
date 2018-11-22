@@ -32,9 +32,9 @@ namespace dl.DL
             }
         }
 
-        public static double ReLU(INode _, double x) => Math.Max(0, x);
+        public static IEnumerable<double> ReLU(IEnumerable<double> xs) => xs.Select(x => Math.Max(0, x)).ToArray();
 
-        public static double Sigmoid(INode _, double x) => 1.0 / (1.0 + Math.Exp(-x));
+        public static IEnumerable<double> Sigmoid(IEnumerable<double> xs) => xs.Select(x => 1.0 / (1.0 + Math.Exp(-x))).ToArray();
 
         public static double SoftMax(INode node, double x)
         {
@@ -56,7 +56,9 @@ namespace dl.DL
                                                     , Func<IEnumerable<Tuple<double, double>>, double> errorFunction
                                                     , ILearningData data)
         {
-            var result = layer.Nodes.Select(x => x.GetValue()).ToArray();
+            var ox = layer.Nodes.Select(x => x.GetValue()).ToArray();
+            var ux = layer.Nodes.Select(layer.CalcFunction).ToArray();
+
             foreach (var item in layer.Nodes.Select((x, index) => new { x, index }))
             {
                 var node = item.x;
@@ -64,17 +66,26 @@ namespace dl.DL
                 // 誤差関数の偏微分
                 Func<double, double> ef = (double x) =>
                 {
-                    var rx = result.ToArray();
+                    var rx = ox.ToArray();
                     rx[index] = x;
                     return errorFunction(rx.Zip(data.Expected, Tuple.Create));
                 };
+                // 活性化関数の偏微分
+                Func<double, double> of = (double x) =>
+                {
+                    var rx = ux.ToArray();
+                    rx[index] = x;
+                    var result = layer.ActivationFunction(rx).ToArray();
+                    return result[index];
+                };
 
                 // 活性化前の値
-                var u = node.GetU();
+                var u = layer.CalcFunction(node);   // todo cache
                 // 出力
                 var o = node.GetValue();
                 // 前の層の重み計算で使える部分
-                node.Delta = ef.Derivative()(o) * ((Func<double,double>)(x => layer.ActivationFunction(node,x))).Derivative()(u);
+                node.Delta = ef.Derivative()(o) * of.Derivative()(u);
+                // ((Func<double, double>)(x => layer.ActivationFunction(node, x))).Derivative()(u);
 
                 // 入力Nodeごとに重みを更新
                 foreach (var link in node.Links)
@@ -94,10 +105,23 @@ namespace dl.DL
                                         , Func<IEnumerable<Tuple<double, double>>, double> errorFunction
                                         , ILearningData data)
         {
-            foreach (var node in layer.Nodes)
+            var ux = layer.Nodes.Select(layer.CalcFunction).ToArray();
+
+            foreach (var item in layer.Nodes.Select((x, index) => new { x, index }))
             {
+                var node = item.x;
+                var index = item.index;
+                // 活性化関数の偏微分
+                Func<double, double> of = (double x) =>
+                {
+                    var rx = ux.ToArray();
+                    rx[index] = x;
+                    var result = layer.ActivationFunction(rx).ToArray();
+                    return result[index];
+                };
+
                 // 活性化前の値
-                var u = node.GetU();
+                var u = layer.CalcFunction(node);
 
                 // 先の層の計算結果を引き継ぐ
                 var forwardCache = (
@@ -108,7 +132,8 @@ namespace dl.DL
                     select delta * l.Weight).Sum();
 
                 // 前の層の重み計算で使える部分
-                node.Delta = forwardCache * ((Func<double, double>)(x => layer.ActivationFunction(node, x))).Derivative()(u);
+                node.Delta = forwardCache * of.Derivative()(u);
+                //((Func<double, double>)(x => layer.ActivationFunction(node, x))).Derivative()(u);
 
                 // 入力Nodeごとに重みを更新
                 foreach (var link in node.Links)

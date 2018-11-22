@@ -7,27 +7,25 @@ namespace dl.DL
 {
     public class FullyConnectedLayer : ILayer
     {
-        private Action<ILayer, ILayer, Func<IEnumerable<Tuple<double, double>>, double>, ILearningData> updateWeight;
-
         public IEnumerable<INode> Nodes { get; set; }
-        public Func<INode, double, double> ActivationFunction { get; set; }
+        public Func<IEnumerable<double>, IEnumerable<double>> ActivationFunction { get; set; }
+        public Func<INode, double> CalcFunction { get; }
 
-        public FullyConnectedLayer(ILayer before, Func<INode, double> calcValue, Func<INode, double, double> activation, int nodeCount, Action<ILayer, ILayer, Func<IEnumerable<Tuple<double, double>>, double>, ILearningData> updateWeight)
+        public FullyConnectedLayer(ILayer before
+                                , Func<INode, double> calcValue
+                                , Func<IEnumerable<double>, IEnumerable<double>> activation
+                                , int nodeCount)
         {
-            this.updateWeight = updateWeight;
             this.ActivationFunction = activation;
+            this.CalcFunction = calcValue;
 
             var nodes =
                 from i in Enumerable.Range(0, nodeCount)
                 let nodeLink = before.Nodes.MakeLink()
-                let node = new Node(i, calcValue, activation, nodeLink)
+                let node = new Node(i, activation, nodeLink)
                 select node;
             this.Nodes = nodes.ToArray();
         }
 
-        public void UpdateWeight(Func<IEnumerable<Tuple<double, double>>, double> errorFunction, ILearningData data, ILayer forwardLayer)
-        {
-            this.updateWeight(this, forwardLayer, errorFunction, data);
-        }
     }
 }

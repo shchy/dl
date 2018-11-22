@@ -19,11 +19,11 @@ namespace dl
             // 入力レイヤ
             var inputLayer = new InputLayer(3);
             // 隠れレイヤ
-            var layer00 = new FullyConnectedLayer(inputLayer, Test, DLF.ReLU, 4, DLF.UpdateWeight);
+            var layer00 = new FullyConnectedLayer(inputLayer, Test, DLF.ReLU, 4);
             // 隠れレイヤ
-            var layer01 = new FullyConnectedLayer(layer00, Test, DLF.ReLU, 2, DLF.UpdateWeight);
+            var layer01 = new FullyConnectedLayer(layer00, Test, DLF.ReLU, 2);
             // 出力レイヤ
-            var layer02 = new FullyConnectedLayer(layer01, Test, DLF.Sigmoid, 2, DLF.UpdateWeightOfOutputLayer);
+            var layer02 = new FullyConnectedLayer(layer01, Test, DLF.Sigmoid, 2);
 
             var machine = new Machine(0.01, 10000, 10
                                     , errorFunction

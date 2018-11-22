@@ -53,12 +53,7 @@ namespace dl.DL
                     errorValue += e;
 
                     // 各Nodeの入力重みを更新
-                    ILayer forwardLayer = null;
-                    foreach (var layer in this.Layers.Skip(1).Reverse())
-                    {
-                        layer.UpdateWeight(errorFunction, data, forwardLayer);
-                        forwardLayer = layer;
-                    }
+                    UpdateWeight(data);
 
                     dataCount = (dataCount + 1) % (this.miniBatch);
 
@@ -121,10 +116,38 @@ namespace dl.DL
         {
             // 入力レイヤの値を更新
             this.firstLayer.UpdateData(data);
+            // 入力レイヤ以降の更新
+            foreach (var l in this.Layers.Skip(1))
+            {
+                // uを求める
+                var ux = l.Nodes.Select(l.CalcFunction).ToArray();
+                // oを求める
+                var ox = l.ActivationFunction(ux);
+                // Nodeを更新
+                foreach (var item in l.Nodes.Zip(ox, Tuple.Create))
+                {
+                    item.Item1.SetValue(item.Item2);
+                }
+            }
 
             // 出力レイヤの値を取得
             return
                 this.outputLayer.Nodes.Select(n => n.GetValue());
+        }
+
+        void UpdateWeight(ILearningData data)
+        {
+            // 出力層の重み更新
+            var outputLayer = this.Layers.Reverse().First();
+            DLF.UpdateWeightOfOutputLayer(outputLayer, null, this.errorFunction, data);
+
+            // 各Nodeの入力重みを更新
+            ILayer forwardLayer = outputLayer;
+            foreach (var layer in this.Layers.Skip(1).Reverse().Skip(1))
+            {
+                DLF.UpdateWeight(layer, forwardLayer, errorFunction, data);
+                forwardLayer = layer;
+            }
         }
     }
 }

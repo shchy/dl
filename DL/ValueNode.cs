@@ -20,7 +20,7 @@ namespace dl.DL
 
         public void Reset() { }
         public double GetValue() => this.Value;
-        public double GetU() => this.Value;
+        public void SetValue(double v) => this.Value = v;
         public void Apply(double learningRate) { }
 
     }

@@ -11,10 +11,9 @@ namespace dl.DL
         /// レイヤ内のノード達
         /// </summary>
         IEnumerable<INode> Nodes { get; }
+        Func<INode, double> CalcFunction { get; }
+        Func<IEnumerable<double>, IEnumerable<double>> ActivationFunction { get; }
 
-        Func<INode, double, double> ActivationFunction { get; }
-
-        void UpdateWeight(Func<IEnumerable<Tuple<double, double>>, double> errorFunction, ILearningData data, ILayer forwardLayer);
     }
 
     public static class LayerFunction
