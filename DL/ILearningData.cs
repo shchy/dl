@@ -10,6 +10,7 @@ namespace dl.DL
     /// </summary>
     public interface ILearningData
     {
+        string Name { get; }
         /// <summary>
         /// 入力値
         /// </summary>

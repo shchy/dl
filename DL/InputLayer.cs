@@ -15,7 +15,7 @@ namespace dl.DL
         public InputLayer(int inputDataSize)
         {
             // 固定値Nodeを作成
-            var inputNodes = Enumerable.Range(0, inputDataSize).Select(i => new ValueNode(i));
+            var inputNodes = Enumerable.Range(0, inputDataSize).Select(_ => new ValueNode());
             this.Nodes = inputNodes.ToArray();
         }
 

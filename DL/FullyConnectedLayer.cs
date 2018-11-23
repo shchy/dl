@@ -14,15 +14,16 @@ namespace dl.DL
         public FullyConnectedLayer(ILayer before
                                 , int nodeCount
                                 , Func<IEnumerable<double>, IEnumerable<double>> activation
-                                , Action<ILayer, ILayer, Func<IEnumerable<Tuple<double, double>>, double>, ILearningData> updateWeightFunction)
+                                , Action<ILayer, ILayer, Func<IEnumerable<Tuple<double, double>>, double>, ILearningData> updateWeightFunction
+                                , Func<double> getWeight)
         {
             this.ActivationFunction = activation;
             this.UpdateWeightFunction = updateWeightFunction;
 
             var nodes =
                 from i in Enumerable.Range(0, nodeCount)
-                let nodeLink = before.Nodes.MakeLink()
-                let node = new Node(i, activation, nodeLink)
+                let nodeLink = before.Nodes.MakeLink(getWeight)
+                let node = new Node(activation, nodeLink)
                 select node;
             this.Nodes = nodes.ToArray();
         }

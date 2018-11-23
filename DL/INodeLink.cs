@@ -17,8 +17,6 @@ namespace dl.DL
 
         double Slope { get; set; }
 
-
-        int UpdateCount { get; set; }
         /// <summary>
         /// 参照するNode
         /// </summary>

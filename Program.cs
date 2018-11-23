@@ -12,21 +12,22 @@ namespace dl
         {
             Console.WriteLine("Hello World!");
 
-            // 誤差関数
-            // Func<IEnumerable<Tuple<double, double>>, double> errorFunction = x => 0.5 * x.Sum(a => Math.Pow(a.Item1 - a.Item2, 2));
-            Func<IEnumerable<Tuple<double, double>>, double> errorFunction = x => -x.Sum(a => a.Item2 * Math.Log(Math.Max(a.Item1, 1e-7)));// + (1 - a.Item2) * Math.Log(1 - a.Item1));
 
             // 入力レイヤ
             var inputLayer = new InputLayer(3);
             // 隠れレイヤ
-            var layer00 = new FullyConnectedLayer(inputLayer, 4, DLF.ReLU, DLF.UpdateWeight);
+            var layer00 = new FullyConnectedLayer(inputLayer, 4, DLF.ReLU, DLF.UpdateWeight, DLF.GetRandomWeight);
             // 隠れレイヤ
-            var layer01 = new FullyConnectedLayer(layer00, 4, DLF.ReLU, DLF.UpdateWeight);
+            var layer01 = new FullyConnectedLayer(layer00, 4, DLF.ReLU, DLF.UpdateWeight, DLF.GetRandomWeight);
             // 出力レイヤ
             var layer02 = new SoftmaxLayer(layer01, 3);
 
-            var machine = new Machine(0.01, 10000, 10
-                                    , errorFunction
+            var batchSize = 10;
+            var epoch = 10000;
+            var learningRate = 0.01;
+
+            var machine = new Machine(learningRate, epoch, batchSize
+                                    , x => DLF.ErrorFunctionCrossEntropy(x) * (1.0 / batchSize)
                                     , inputLayer
                                     , layer00
                                     , layer01
@@ -37,10 +38,10 @@ namespace dl
                 from y in Enumerable.Range(1, 8)
                 from z in Enumerable.Range(1, 8)
                 let v = x + (y * 2) + z
-                select LearningData.New(new double[] { x, y, z }
-                        , v < 16 ? new[] { 1.0, 0.0, 0.0 }
+                let expect = v < 16 ? new[] { 1.0, 0.0, 0.0 }
                         : v < 20 ? new[] { 0.0, 1.0, 0.0 }
-                        : new[] { 0.0, 0.0, 1.0 })).ToArray();
+                        : new[] { 0.0, 0.0, 1.0 }
+                select LearningData.New(expect.ToString(), new double[] { x, y, z }, expect)).ToArray();
 
             var validData = testData.Skip(testData.Length / 2).ToArray();
             testData = testData.Take(testData.Length / 2).ToArray();

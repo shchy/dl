@@ -32,6 +32,26 @@ namespace dl.DL
             }
         }
 
+
+        public static double CalcFunction(INode node)
+        {
+            return
+                node.Links
+                    .Select(link => link.InputNode.GetValue() * link.Weight)
+                    .Sum();
+        }
+
+        public static double GetRandomWeight() => 0.01 * DLF.GetRandom();
+
+        public static double ErrorFunctionCrossEntropy(IEnumerable<Tuple<double, double>> result)
+        {
+            return -result.Sum(a => a.Item2 * Math.Log(Math.Max(a.Item1, 1e-7)));// + (1 - a.Item2) * Math.Log(1 - a.Item1));
+        }
+        public static double ErrorFunction(IEnumerable<Tuple<double, double>> result)
+        {
+            return 0.5 * result.Sum(a => Math.Pow(a.Item1 - a.Item2, 2));
+        }
+
         public static IEnumerable<double> ReLU(IEnumerable<double> xs) => xs.Select(x => Math.Max(0, x)).ToArray();
 
         public static IEnumerable<double> Sigmoid(IEnumerable<double> xs) => xs.Select(x => 1.0 / (1.0 + Math.Exp(-x))).ToArray();
@@ -80,7 +100,6 @@ namespace dl.DL
                 var o = node.GetValue();
                 // 前の層の重み計算で使える部分
                 node.Delta = ef.Derivative()(o) * of.Derivative()(u);
-                // ((Func<double, double>)(x => layer.ActivationFunction(node, x))).Derivative()(u);
 
                 // 入力Nodeごとに重みを更新
                 foreach (var link in node.Links)
@@ -89,18 +108,10 @@ namespace dl.DL
                     var o0 = link.InputNode.GetValue();
                     // 更新用の傾きを覚えておく
                     link.Slope += node.Delta * o0;
-                    link.UpdateCount++;
                 }
             }
         }
 
-        public static double CalcFunction(INode node)
-        {
-            return
-                node.Links
-                    .Select(link => link.InputNode.GetValue() * link.Weight)
-                    .Sum();
-        }
         public static void UpdateWeightOfSoftMax(ILayer layer
                                                     , ILayer _
                                                     , Func<IEnumerable<Tuple<double, double>>, double> errorFunction
@@ -124,7 +135,6 @@ namespace dl.DL
                     var o0 = link.InputNode.GetValue();
                     // 更新用の傾きを覚えておく
                     link.Slope += node.Delta * o0;
-                    link.UpdateCount++;
                 }
             }
         }
@@ -163,7 +173,6 @@ namespace dl.DL
 
                 // 前の層の重み計算で使える部分
                 node.Delta = forwardCache * of.Derivative()(u);
-                //((Func<double, double>)(x => layer.ActivationFunction(node, x))).Derivative()(u);
 
                 // 入力Nodeごとに重みを更新
                 foreach (var link in node.Links)
@@ -172,7 +181,6 @@ namespace dl.DL
                     var o0 = link.InputNode.GetValue();
                     // 更新用の傾きを覚えておく
                     link.Slope += node.Delta * o0;
-                    link.UpdateCount++;
                 }
             }
         }

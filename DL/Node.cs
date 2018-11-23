@@ -7,16 +7,14 @@ namespace dl.DL
 {
     public class Node : INode
     {
-        public int Index { get; set; }
         public IEnumerable<INodeLink> Links { get; set; }
         private readonly Func<IEnumerable<double>, IEnumerable<double>> activation;
 
         private double output;
         public double Delta { get; set; }
 
-        public Node(int index, Func<IEnumerable<double>, IEnumerable<double>> activation, IEnumerable<INodeLink> links)
+        public Node(Func<IEnumerable<double>, IEnumerable<double>> activation, IEnumerable<INodeLink> links)
         {
-            this.Index = index;
             this.activation = activation;
             this.Links = links.ToArray();
             this.output = 0.0;
@@ -27,9 +25,8 @@ namespace dl.DL
             Reset();
             foreach (var link in this.Links)
             {
-                link.Weight -= (link.Slope / link.UpdateCount) * learningRate;
+                link.Weight -= (link.Slope) * learningRate;
                 link.Slope = 0.0;
-                link.UpdateCount = 0;
             }
         }
 
