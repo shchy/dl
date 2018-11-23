@@ -16,7 +16,9 @@ namespace dl.DL
 
         public IEnumerable<ILayer> Layers { get; set; }
 
-        public Machine(double learningRate, int epoch, int miniBatch, Func<IEnumerable<Tuple<double, double>>, double> errorFunction, params ILayer[] layers)
+        public Machine(double learningRate, int epoch, int miniBatch
+                    , Func<IEnumerable<Tuple<double, double>>, double> errorFunction
+                    , params ILayer[] layers)
         {
             // todo 先頭はInputLayerであること
             this.firstLayer = layers.First() as InputLayer;
@@ -28,68 +30,18 @@ namespace dl.DL
             this.Layers = layers;
         }
 
-        public void Learn(IEnumerable<ILearningData> learningData)
+        public IEnumerable<IEnumerable<Tuple<ILearningData, IEnumerable<double>>>> Learn(IEnumerable<ILearningData> learningData)
         {
-            var k = learningData.Count();
-            var errorValueMin = double.MaxValue;
-            var errorValueMinIndex = -1;
             for (int i = 0; i < epoch; i++)
             {
-                var errorValue = 0.0;
-                var errorValueMax = 0.0;
-
-                var shuffled = DLF.Shuffle(learningData);
-                var dataCount = 0;
-
-                // テストデータ分繰り返す
-                foreach (var data in shuffled)
-                {
-                    // 処理する
-                    var result = Test(data.Data).ToArray();
-
-                    // 誤差関数通す
-                    var e = errorFunction(result.Zip(data.Expected, Tuple.Create));
-                    errorValueMax = Math.Max(errorValueMax, e);
-                    errorValue += e;
-
-                    // 各Nodeの入力重みを更新
-                    UpdateWeight(data);
-
-                    dataCount = (dataCount + 1) % (this.miniBatch);
-
-                    foreach (var node in this.Layers.SelectMany(x => x.Nodes))
-                    {
-                        if (dataCount == 0)
-                        {
-                            node.Apply(this.learningRate);
-                        }
-                        else
-                        {
-                            node.Reset();
-                        }
-                    }
-                }
-
-                if (errorValueMax < errorValueMin)
-                {
-                    errorValueMin = errorValueMax;
-                    errorValueMinIndex = i;
-                }
-                if (i % 100 == 0)
-                {
-                    Console.WriteLine($"{i.ToString("00000")} 誤差   :{(errorValue / k).ToString("0.00000")}");
-                    Console.WriteLine($"{i.ToString("00000")} 最大誤差:{(errorValueMax).ToString("0.00000")}");
-                }
+                yield return Learn(i, learningData);
             }
-            Console.WriteLine($"最小誤差:{(errorValueMin).ToString("0.00000")} 最小誤差Index:{(errorValueMinIndex)}");
         }
 
-        public void Validate(IEnumerable<ILearningData> learningData)
+        private IEnumerable<Tuple<ILearningData, IEnumerable<double>>> Learn(int i, IEnumerable<ILearningData> learningData)
         {
             var k = learningData.Count();
-            var errorValue = 0.0;
-            var errorValueMax = 0.0;
-
+            var dataCount = 0;
             var shuffled = DLF.Shuffle(learningData);
 
             // テストデータ分繰り返す
@@ -98,18 +50,25 @@ namespace dl.DL
                 // 処理する
                 var result = Test(data.Data).ToArray();
 
-                // 誤差関数通す
-                var e = errorFunction(result.Zip(data.Expected, Tuple.Create));
-                errorValueMax = Math.Max(errorValueMax, e);
-                errorValue += e;
+                // 各Nodeの入力重みを更新
+                UpdateWeight(data);
+
+                dataCount = (dataCount + 1) % (this.miniBatch);
 
                 foreach (var node in this.Layers.SelectMany(x => x.Nodes))
                 {
-                    node.Reset();
+                    if (dataCount == 0)
+                    {
+                        node.Apply(this.learningRate);
+                    }
+                    else
+                    {
+                        node.Reset();
+                    }
                 }
+
+                yield return Tuple.Create(data, result as IEnumerable<double>);
             }
-            Console.WriteLine($"誤差   :{(errorValue / k).ToString("0.00000")}");
-            Console.WriteLine($"最大誤差:{(errorValueMax).ToString("0.00000")}");
         }
 
         public IEnumerable<double> Test(IEnumerable<double> data)
