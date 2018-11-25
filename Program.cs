@@ -27,7 +27,7 @@ namespace dl
             var learningRate = 0.01;
             Func<IEnumerable<Tuple<double, double>>, double> errorFunction = DLF.ErrorFunctionCrossEntropy;
 
-            var machine = new Machine(learningRate, epoch, batchSize
+            var machine = new Machine(learningRate, epoch, batchSize, new Validator(3)
                                     , x => errorFunction(x) * (1.0 / batchSize)
                                     , inputLayer
                                     , layer00
@@ -48,65 +48,9 @@ namespace dl
             var validData = testData.Skip(testData.Length / 2).ToArray();
             testData = testData.Take(testData.Length / 2).ToArray();
 
-            var learningResults = machine.Learn(testData.ToArray());
+            machine.Learn(testData.ToArray());
 
-            // 評価
-            foreach (var item in learningResults.Select((r, i) => new { r, i }))
-            {
-                if (item.i % 100 != 0)
-                {
-                    continue;
-                }
-                var k = testData.Length;
-
-                var expectCount = new int[3];
-                var outputCount = new int[3];
-                var accuracyCount = new int[3];
-
-                foreach (var result in item.r)
-                {
-                    var expected = result.Item1.Expected.ToArray();
-                    var output = result.Item2.ToArray();
-
-                    var expectIndex = FindMaxValueIndex(expected);
-                    var outputIndex = FindMaxValueIndex(output);
-
-                    // 期待値のIndexの数を記憶しておく
-                    expectCount[expectIndex] += 1;
-                    outputCount[outputIndex] += 1;
-
-                    // 正解率
-                    if (expectIndex == outputIndex)
-                    {
-                        accuracyCount[outputIndex] += 1;
-                    }
-                }
-
-                var learningResult = new LearningResult
-                {
-                    Accuracy = accuracyCount.Sum() / (double)k,
-                    Recall = accuracyCount.Zip(expectCount, (a, e) => a / (double)e).ToArray(),
-                    Precision = accuracyCount.Zip(outputCount, (a, e) => a / (double)e).ToArray(),
-                };
-
-                Console.WriteLine($"{item.i.ToString("00000")}:{learningResult}");
-                // Console.WriteLine(LearningResult.ArrayToString(expectCount.Select(a => (double)a)));
-            }
-        }
-
-        private static int FindMaxValueIndex(IEnumerable<double> xs)
-        {
-            var index = -1;
-            var max = double.MinValue;
-            foreach (var item in xs.Select((x, i) => new { x, i }))
-            {
-                if (max < item.x)
-                {
-                    index = item.i;
-                    max = item.x;
-                }
-            }
-            return index;
+            
         }
     }
 }

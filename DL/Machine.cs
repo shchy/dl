@@ -12,11 +12,12 @@ namespace dl.DL
         private readonly double learningRate;
         private readonly int epoch;
         private readonly int miniBatch;
+        private readonly IValidator validator;
         private readonly Func<IEnumerable<Tuple<double, double>>, double> errorFunction;
 
         public IEnumerable<ILayer> Layers { get; set; }
 
-        public Machine(double learningRate, int epoch, int miniBatch
+        public Machine(double learningRate, int epoch, int miniBatch, IValidator validator
                     , Func<IEnumerable<Tuple<double, double>>, double> errorFunction
                     , params ILayer[] layers)
         {
@@ -26,15 +27,18 @@ namespace dl.DL
             this.learningRate = learningRate;
             this.epoch = epoch;
             this.miniBatch = miniBatch;
+            this.validator = validator;
             this.errorFunction = errorFunction;
             this.Layers = layers;
         }
 
-        public IEnumerable<IEnumerable<Tuple<ILearningData, IEnumerable<double>>>> Learn(IEnumerable<ILearningData> learningData)
+        public void Learn(IEnumerable<ILearningData> learningData)
         {
             for (int i = 0; i < epoch; i++)
             {
-                yield return Learn(i, learningData);
+                var results = Learn(i, learningData).ToArray();
+                var result = this.validator.Valid(results);
+                Console.WriteLine($"{i.ToString("00000")}:{result}");
             }
         }
 
