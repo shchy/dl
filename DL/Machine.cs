@@ -47,7 +47,7 @@ namespace dl.DL
             var k = learningData.Count();
             var dataCount = 0;
             var shuffled = DLF.Shuffle(learningData);
-
+            var dataIndex = 0;
             // テストデータ分繰り返す
             foreach (var data in shuffled)
             {
@@ -70,7 +70,7 @@ namespace dl.DL
                         node.Reset();
                     }
                 }
-
+                dataIndex++;
                 yield return Tuple.Create(data, result as IEnumerable<double>);
             }
         }
@@ -83,7 +83,7 @@ namespace dl.DL
             foreach (var l in this.Layers.Skip(1))
             {
                 // uを求める
-                var ux = l.Nodes.Select(DLF.CalcFunction).ToArray();
+                var ux = l.Nodes.Select(l.CalcFunction).ToArray();
                 // oを求める
                 var ox = l.ActivationFunction(ux);
                 // Nodeを更新

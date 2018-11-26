@@ -11,6 +11,7 @@ namespace dl.DL
         public Func<IEnumerable<double>, IEnumerable<double>> ActivationFunction { get; } = (x) => x;
 
         public Action<ILayer, ILayer, Func<IEnumerable<Tuple<double, double>>, double>, ILearningData> UpdateWeightFunction { get; } = (_1, _2, _3, _4) => { };
+        public Func<INode, double> CalcFunction { get; set; } = (n) => n.GetValue();
 
         public InputLayer(int inputDataSize)
         {
