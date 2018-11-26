@@ -18,13 +18,13 @@ namespace dl
             // 入力レイヤ
             var inputLayer = new InputLayer(28 * 28);
             // 畳み込みレイヤ
-            var layer00 = new ConvolutionLayer(inputLayer, 28, 1, 3, 3, DLF.ReLU, DLF.UpdateWeightPooling);
+            var layer00 = new ConvolutionLayer(inputLayer, 28, 1, 3, 3, DLF.ReLU);
             // プーリングレイヤ
-            var layer01 = new PoolingLayer(layer00, 26, 3, 2, DLF.ReLU, DLF.UpdateWeight);
+            var layer01 = new PoolingLayer(layer00, 26, 3, 2);
             // 畳み込みレイヤ
-            var layer02 = new ConvolutionLayer(layer01, 13, 3, 3, 1, DLF.ReLU, DLF.UpdateWeightPooling);
+            var layer02 = new ConvolutionLayer(layer01, 13, 3, 3, 1, DLF.ReLU);
             // プーリングレイヤ
-            var layer03 = new PoolingLayer(layer02, 11, 3, 2, DLF.ReLU, DLF.UpdateWeight);
+            var layer03 = new PoolingLayer(layer02, 11, 3, 2);
             // 出力レイヤ
             var layer04 = new SoftmaxLayer(layer03, outputSize);
 

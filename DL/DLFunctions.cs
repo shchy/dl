@@ -99,7 +99,7 @@ namespace dl.DL
                 // 出力
                 var o = node.GetValue();
                 // 前の層の重み計算で使える部分
-                node.Delta = ef.Derivative()(o) * of.Derivative()(u);
+                var delta = ef.Derivative()(o) * of.Derivative()(u);
 
                 // 入力Nodeごとに重みを更新
                 foreach (var link in node.Links)
@@ -107,7 +107,9 @@ namespace dl.DL
                     // 前の層の出力
                     var o0 = link.InputNode.GetValue();
                     // 更新用の傾きを覚えておく
-                    link.Slope += node.Delta * o0;
+                    link.Slope += delta * o0;
+                    // 
+                    link.InputNode.Delta += delta * link.Weight;
                 }
             }
         }
@@ -126,110 +128,59 @@ namespace dl.DL
                 var node = item.Item1;
                 var delta = item.Item2;
 
-                // 前の層の重み計算で使える部分
-                node.Delta = delta;
                 // 入力Nodeごとに重みを更新
                 foreach (var link in node.Links)
                 {
                     // 前の層の出力
                     var o0 = link.InputNode.GetValue();
                     // 更新用の傾きを覚えておく
-                    link.Slope += node.Delta * o0;
+                    link.Slope += delta * o0;
+                    //
+                    link.InputNode.Delta += delta * link.Weight;
                 }
             }
         }
 
         /// 出力層以外の重み計算
-        public static void UpdateWeight(ILayer layer
-                                        , ILayer forwardLayer
-                                        , Func<IEnumerable<Tuple<double, double>>, double> errorFunction
-                                        , ILearningData data)
+        public static Action<ILayer, ILayer, Func<IEnumerable<Tuple<double, double>>, double>, ILearningData> UpdateWeight(Func<INode, INodeLink, bool> targetFilter = null)
         {
-            var ux = layer.Nodes.Select(layer.CalcFunction).ToArray();
-
-            foreach (var item in layer.Nodes.Select((x, index) => new { x, index }))
+            return (layer, forwardLayer, errorFunction, data) =>
             {
-                var node = item.x;
-                var index = item.index;
-                // 活性化関数の偏微分
-                Func<double, double> of = (double x) =>
+                var ux = layer.Nodes.Select(layer.CalcFunction).ToArray();
+
+                foreach (var item in layer.Nodes.Select((x, index) => new { x, index }))
                 {
-                    var rx = ux.ToArray();
-                    rx[index] = x;
-                    var result = layer.ActivationFunction(rx).ToArray();
-                    return result[index];
-                };
+                    var node = item.x;
+                    var index = item.index;
+                    // 活性化関数の偏微分
+                    Func<double, double> of = (double x) =>
+                    {
+                        var rx = ux.ToArray();
+                        rx[index] = x;
+                        var result = layer.ActivationFunction(rx).ToArray();
+                        return result[index];
+                    };
 
-                // 活性化前の値
-                var u = layer.CalcFunction(node);
+                    // 活性化前の値
+                    var u = layer.CalcFunction(node);
 
-                // 先の層の計算結果を引き継ぐ
-                var forwardCache = (
-                    from n in forwardLayer.Nodes
-                    let delta = n.Delta
-                    let l = n.Links.FirstOrDefault(l => l.InputNode == node)
-                    where l != null
-                    select delta * l.Weight).Sum();
+                    // 前の層の重み計算で使える部分
+                    var delta = node.Delta * of.Derivative()(u);
 
-                // 前の層の重み計算で使える部分
-                node.Delta = forwardCache * of.Derivative()(u);
-
-                // 入力Nodeごとに重みを更新
-                foreach (var link in node.Links)
-                {
-                    // 前の層の出力
-                    var o0 = link.InputNode.GetValue();
-                    // 更新用の傾きを覚えておく
-                    link.Slope += node.Delta * o0;
+                    // 入力Nodeごとに重みを更新
+                    targetFilter = targetFilter ?? ((n,l) => true);
+                    foreach (var link in node.Links)
+                    {
+                        if(targetFilter(node, link) == false)
+                            continue;
+                        // 前の層の出力
+                        var o0 = link.InputNode.GetValue();
+                        // 更新用の傾きを覚えておく
+                        link.Slope += delta * o0;
+                        link.InputNode.Delta += delta * link.Weight;
+                    }
                 }
-            }
-        }
-
-        public static void UpdateWeightPooling(ILayer layer
-                                        , ILayer forwardLayer
-                                        , Func<IEnumerable<Tuple<double, double>>, double> errorFunction
-                                        , ILearningData data)
-        {
-            var ux = layer.Nodes.Select(layer.CalcFunction).ToArray();
-
-            foreach (var item in layer.Nodes.Select((x, index) => new { x, index }))
-            {
-                var node = item.x;
-                var index = item.index;
-                // 活性化関数の偏微分
-                Func<double, double> of = (double x) =>
-                {
-                    var rx = ux.ToArray();
-                    rx[index] = x;
-                    var result = layer.ActivationFunction(rx).ToArray();
-                    return result[index];
-                };
-
-                // 活性化前の値
-                var u = layer.CalcFunction(node);
-
-                // 先の層の計算結果を引き継ぐ
-                var forwardCache = (
-                    from n in forwardLayer.Nodes
-                    where n.GetValue() == node.GetValue()
-                    let delta = n.Delta
-                    let l = n.Links.FirstOrDefault(l => l.InputNode == node)
-                    where l != null
-                    select delta * l.Weight).Sum();
-
-                // 前の層の重み計算で使える部分
-                node.Delta = forwardCache * of.Derivative()(u);
-
-                // 入力Nodeごとに重みを更新
-                foreach (var link in node.Links)
-                {
-                    // 前の層の出力
-                    var o0 = link.InputNode.GetValue();
-                    // 更新用の傾きを覚えておく
-                    link.Slope += node.Delta * o0;
-                }
-            }
-
+            };
         }
     }
 }

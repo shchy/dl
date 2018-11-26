@@ -14,9 +14,9 @@ namespace dl
             // 入力レイヤ
             var inputLayer = new InputLayer(3);
             // 隠れレイヤ
-            var layer00 = new FullyConnectedLayer(inputLayer, 20, DLF.ReLU, DLF.UpdateWeight, DLF.GetRandomWeight);
+            var layer00 = new FullyConnectedLayer(inputLayer, 20, DLF.ReLU, DLF.UpdateWeight(), DLF.GetRandomWeight);
             // 隠れレイヤ
-            var layer01 = new FullyConnectedLayer(layer00, 10, DLF.ReLU, DLF.UpdateWeight, DLF.GetRandomWeight);
+            var layer01 = new FullyConnectedLayer(layer00, 10, DLF.ReLU, DLF.UpdateWeight(), DLF.GetRandomWeight);
             // 出力レイヤ
             var layer02 = new SoftmaxLayer(layer01, 3);
 

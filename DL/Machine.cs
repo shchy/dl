@@ -44,10 +44,10 @@ namespace dl.DL
 
         private IEnumerable<Tuple<ILearningData, IEnumerable<double>>> Learn(int i, IEnumerable<ILearningData> learningData)
         {
-            var k = learningData.Count();
-            var dataCount = 0;
             var shuffled = DLF.Shuffle(learningData);
+            var dataCount = 0;
             var dataIndex = 0;
+            var allNodes = this.Layers.SelectMany(x => x.Nodes).ToArray();
             // テストデータ分繰り返す
             foreach (var data in shuffled)
             {
@@ -59,7 +59,7 @@ namespace dl.DL
 
                 dataCount = (dataCount + 1) % (this.miniBatch);
 
-                foreach (var node in this.Layers.SelectMany(x => x.Nodes))
+                foreach (var node in allNodes)
                 {
                     if (dataCount == 0)
                     {
