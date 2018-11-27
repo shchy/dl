@@ -37,7 +37,7 @@ namespace dl.DL
         {
             return
                 node.Links
-                    .Select(link => link.InputNode.GetValue() * link.Weight)
+                    .Select(link => link.InputNode.GetValue() * link.Weight.Value)
                     .Sum();
         }
 
@@ -104,12 +104,7 @@ namespace dl.DL
                 // 入力Nodeごとに重みを更新
                 foreach (var link in node.Links)
                 {
-                    // 前の層の出力
-                    var o0 = link.InputNode.GetValue();
-                    // 更新用の傾きを覚えておく
-                    link.Slope += delta * o0;
-                    // 
-                    link.InputNode.Delta += delta * link.Weight;
+                    Update(node, link, delta);
                 }
             }
         }
@@ -131,12 +126,7 @@ namespace dl.DL
                 // 入力Nodeごとに重みを更新
                 foreach (var link in node.Links)
                 {
-                    // 前の層の出力
-                    var o0 = link.InputNode.GetValue();
-                    // 更新用の傾きを覚えておく
-                    link.Slope += delta * o0;
-                    //
-                    link.InputNode.Delta += delta * link.Weight;
+                    Update(node, link, delta);
                 }
             }
         }
@@ -182,8 +172,8 @@ namespace dl.DL
             // 前の層の出力
             var o0 = link.InputNode.GetValue();
             // 更新用の傾きを覚えておく
-            link.Slope += delta * o0;
-            link.InputNode.Delta += delta * link.Weight;
+            link.Weight.Slope += delta * o0;
+            link.InputNode.Delta += delta * link.Weight.Value;
         }
     }
 }

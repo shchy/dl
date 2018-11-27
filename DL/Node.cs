@@ -25,8 +25,9 @@ namespace dl.DL
             Reset();
             foreach (var link in this.Links)
             {
-                link.Weight -= (link.Slope) * learningRate;
-                link.Slope = 0.0;
+                if (link.Weight.Slope != 0.0)
+                    link.Weight.Value -= (link.Weight.Slope) * learningRate;
+                link.Weight.Slope = 0.0;
             }
         }
 

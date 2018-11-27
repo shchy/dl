@@ -10,16 +10,20 @@ namespace dl.DL
     /// </summary>
     public interface INodeLink
     {
-        /// <summary>
-        /// 重み
-        /// </summary>
-        double Weight { get; set; }
-
-        double Slope { get; set; }
-
+        IWeight Weight { get; }
         /// <summary>
         /// 参照するNode
         /// </summary>
         INode InputNode { get; }
+    }
+
+    public interface IWeight
+    {
+        /// <summary>
+        /// 重み
+        /// </summary>
+        double Value { get; set; }
+        /// 重みに反映する傾き
+        double Slope { get; set; }
     }
 }

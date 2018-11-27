@@ -22,15 +22,16 @@ namespace dl.DL
         public static IEnumerable<INodeLink> MakeLink(this IEnumerable<INode> nodes, Func<double> getWeight)
         {
             return
-                new[] { new NodeLink { InputNode = new ValueNode() { Value = 1 }, Weight = getWeight() } }
-                .Concat(nodes.Select(n => new NodeLink { InputNode = n, Weight = getWeight() }))
+                new[] { new NodeLink { InputNode = new ValueNode() { Value = 1 }, Weight = Weight.Make(getWeight()) } }
+                .Concat(nodes.Select(n => new NodeLink { InputNode = n, Weight = Weight.Make(getWeight()) }))
                 .ToArray();
         }
 
-        public static IEnumerable<INodeLink> MakeLink(this IEnumerable<INode> nodes, int width, int height, int filterSize, int offsetX, int offsetY, Func<double> getWeight)
+        public static IEnumerable<INodeLink> MakeLink(this IEnumerable<INode> nodes, int width, int filterSize, int offsetX, int offsetY, Func<int, int, IWeight> getWeight)
         {
             var inputNodes = nodes.ToArray();
-            var bias = new NodeLink { InputNode = new ValueNode() { Value = 1 }, Weight = getWeight() };
+            var height = inputNodes.Length / width;
+            var bias = new NodeLink { InputNode = new ValueNode() { Value = 1 }, Weight = Weight.Make(DLF.GetRandomWeight()) };
             var links = (
                 from y in Enumerable.Range(0, filterSize)
                 from x in Enumerable.Range(0, filterSize)
@@ -38,7 +39,7 @@ namespace dl.DL
                 where (offsetY + y) < height
                 let nodeIndex = ((offsetY + y) * width) + offsetX + x
                 let inputNode = inputNodes[nodeIndex]
-                select new NodeLink { InputNode = inputNode, Weight = getWeight() })
+                select new NodeLink { InputNode = inputNode, Weight = getWeight(x, y) })
                 .ToArray();
 
             return
