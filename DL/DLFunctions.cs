@@ -142,7 +142,7 @@ namespace dl.DL
         }
 
         /// 出力層以外の重み計算
-        public static Action<ILayer, ILayer, Func<IEnumerable<Tuple<double, double>>, double>, ILearningData> UpdateWeight(Func<INode, INodeLink, bool> targetFilter = null)
+        public static Action<ILayer, ILayer, Func<IEnumerable<Tuple<double, double>>, double>, ILearningData> UpdateWeight(Action<INode, INodeLink, double> update = null)
         {
             return (layer, forwardLayer, errorFunction, data) =>
             {
@@ -168,19 +168,22 @@ namespace dl.DL
                     var delta = node.Delta * of.Derivative()(u);
 
                     // 入力Nodeごとに重みを更新
-                    targetFilter = targetFilter ?? ((n,l) => true);
+                    update = update ?? Update;
                     foreach (var link in node.Links)
                     {
-                        if(targetFilter(node, link) == false)
-                            continue;
-                        // 前の層の出力
-                        var o0 = link.InputNode.GetValue();
-                        // 更新用の傾きを覚えておく
-                        link.Slope += delta * o0;
-                        link.InputNode.Delta += delta * link.Weight;
+                        update(node, link, delta);
                     }
                 }
             };
+        }
+
+        static void Update(INode node, INodeLink link, double delta)
+        {
+            // 前の層の出力
+            var o0 = link.InputNode.GetValue();
+            // 更新用の傾きを覚えておく
+            link.Slope += delta * o0;
+            link.InputNode.Delta += delta * link.Weight;
         }
     }
 }

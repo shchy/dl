@@ -25,8 +25,8 @@ namespace dl.DL
                 from y in Enumerable.Range(0, (height - filterSize) + 1)
                 from x in Enumerable.Range(0, (width - filterSize) + 1)
                 let links =
-                    from channelOffset in Enumerable.Range(0,beforeLayerFilterCount)
-                    let lx = before.Nodes.MakeLink(width, height, filterSize, x, y + (channelOffset * height)).ToArray()
+                    from channelOffset in Enumerable.Range(0, beforeLayerFilterCount)
+                    let lx = before.Nodes.MakeLink(width, height, filterSize, x, y + (channelOffset * height), DLF.GetRandomWeight).ToArray()
                     select lx
                 let node = new Node(ActivationFunction, links.SelectMany(l => l).ToArray())
                 select node).ToArray();
