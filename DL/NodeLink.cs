@@ -20,12 +20,23 @@ namespace dl.DL
 
         public double Slope { get; set; }
 
-        public static IWeight Make(double v)
+        private int refCounter;
+
+
+        public void Apply(double learningRate)
+        {
+            if (Slope != 0.0)
+                Value -= (Slope / refCounter) * learningRate;
+            Slope = 0.0;
+        }
+
+        public static IWeight Make(double v, int refCounter = 1)
         {
             return new Weight
             {
                 Value = v,
                 Slope = 0.0,
+                refCounter = refCounter,
             };
         }
     }

@@ -141,6 +141,9 @@ namespace dl.DL
                 foreach (var item in layer.Nodes.Select((x, index) => new { x, index }))
                 {
                     var node = item.x;
+                    if (node.Delta == 0.0)
+                        continue;
+
                     var index = item.index;
                     // 活性化関数の偏微分
                     Func<double, double> of = (double x) =>

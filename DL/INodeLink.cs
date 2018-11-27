@@ -25,5 +25,7 @@ namespace dl.DL
         double Value { get; set; }
         /// 重みに反映する傾き
         double Slope { get; set; }
+
+        void Apply(double learningRate);
     }
 }

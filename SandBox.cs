@@ -46,7 +46,7 @@ namespace dl
             var validData = testData.Skip(testData.Length / 2).ToArray();
             testData = testData.Take(testData.Length / 2).ToArray();
 
-            machine.Learn(testData.ToArray());
+            machine.Learn(testData.ToArray(), validData.ToArray());
         }
     }
 }

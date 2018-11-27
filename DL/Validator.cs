@@ -48,6 +48,7 @@ namespace dl.DL
 
             var learningResult = new LearningResult
             {
+                Expected = expectCount,
                 Accuracy = accuracyCount.Sum() / (double)k,
                 Recall = accuracyCount.Zip(expectCount, (a, e) => a / (double)e).ToArray(),
                 Precision = accuracyCount.Zip(outputCount, (a, e) => a / (double)e).ToArray(),

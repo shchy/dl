@@ -19,12 +19,12 @@ namespace dl
             var inputLayer = new InputLayer(28 * 28);
             // 畳み込みレイヤ
             // プーリングレイヤ
-            var layer00 = new ConvolutionLayer(inputLayer, 28, 1, 3, 3, DLF.ReLU);
-            var layer01 = new PoolingLayer(layer00, 26, 3, 2);
+            var layer00 = new ConvolutionLayer(inputLayer, 28, 1, 3, 20, DLF.ReLU);
+            var layer01 = new PoolingLayer(layer00, 26, 20, 2);
             // 畳み込みレイヤ
             // プーリングレイヤ
-            var layer02 = new ConvolutionLayer(layer01, 13, 3, 3, 1, DLF.ReLU);
-            var layer03 = new PoolingLayer(layer02, 11, 3, 2);
+            var layer02 = new ConvolutionLayer(layer01, 13, 20, 3, 50, DLF.ReLU);
+            var layer03 = new PoolingLayer(layer02, 11, 50, 2);
             // 出力レイヤ
             var layer04 = new SoftmaxLayer(layer03, outputSize);
 
@@ -41,7 +41,34 @@ namespace dl
             // 学習データを生成
             var testData = DLF.Shuffle(new MNISTLoader().Load()).ToArray();
 
-            machine.Learn(testData.Take(100).ToArray());
+            // 0-9を均等にピックアップ
+            var pickNum = 5;
+            var a = new[]{
+                testData.Take(10000).Where(x => x.Name == "0").Take(pickNum),
+                testData.Take(10000).Where(x => x.Name == "1").Take(pickNum),
+                testData.Take(10000).Where(x => x.Name == "2").Take(pickNum),
+                testData.Take(10000).Where(x => x.Name == "3").Take(pickNum),
+                testData.Take(10000).Where(x => x.Name == "4").Take(pickNum),
+                testData.Take(10000).Where(x => x.Name == "5").Take(pickNum),
+                testData.Take(10000).Where(x => x.Name == "6").Take(pickNum),
+                testData.Take(10000).Where(x => x.Name == "7").Take(pickNum),
+                testData.Take(10000).Where(x => x.Name == "8").Take(pickNum),
+                testData.Take(10000).Where(x => x.Name == "9").Take(pickNum),
+            };
+            var b = new[]{
+                testData.Skip(10000).Where(x => x.Name == "0").Take(pickNum),
+                testData.Skip(10000).Where(x => x.Name == "1").Take(pickNum),
+                testData.Skip(10000).Where(x => x.Name == "2").Take(pickNum),
+                testData.Skip(10000).Where(x => x.Name == "3").Take(pickNum),
+                testData.Skip(10000).Where(x => x.Name == "4").Take(pickNum),
+                testData.Skip(10000).Where(x => x.Name == "5").Take(pickNum),
+                testData.Skip(10000).Where(x => x.Name == "6").Take(pickNum),
+                testData.Skip(10000).Where(x => x.Name == "7").Take(pickNum),
+                testData.Skip(10000).Where(x => x.Name == "8").Take(pickNum),
+                testData.Skip(10000).Where(x => x.Name == "9").Take(pickNum),
+            };
+
+            machine.Learn(a.SelectMany(x => x).ToArray(), b.SelectMany(x => x).ToArray());
         }
     }
 }

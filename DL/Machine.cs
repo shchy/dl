@@ -32,7 +32,7 @@ namespace dl.DL
             this.Layers = layers;
         }
 
-        public void Learn(IEnumerable<ILearningData> learningData)
+        public void Learn(IEnumerable<ILearningData> learningData, IEnumerable<ILearningData> validateData)
         {
             for (int i = 0; i < epoch; i++)
             {
@@ -47,7 +47,8 @@ namespace dl.DL
             var shuffled = DLF.Shuffle(learningData);
             var dataCount = 0;
             var dataIndex = 0;
-            var allNodes = this.Layers.SelectMany(x => x.Nodes).ToArray();
+            var allNodes = this.Layers.SelectMany(x => x.Nodes).Where(x => !(x is ValueNode)).ToArray();
+            var learned = new List<Tuple<ILearningData, IEnumerable<double>>>();
             // テストデータ分繰り返す
             foreach (var data in shuffled)
             {
@@ -58,20 +59,29 @@ namespace dl.DL
                 UpdateWeight(data);
 
                 dataCount = (dataCount + 1) % (this.miniBatch);
-
-                foreach (var node in allNodes)
+                var isBatchUpdate = dataCount == 0;
+                if (isBatchUpdate)
                 {
-                    if (dataCount == 0)
+                    foreach (var node in allNodes)
                     {
                         node.Apply(this.learningRate);
                     }
-                    else
+                    var tempResult = this.validator.Valid(learned);
+                    Console.WriteLine($"{i.ToString("00000")}-{dataIndex.ToString("00000")}:{tempResult}");
+                }
+                else
+                {
+                    foreach (var node in allNodes)
                     {
                         node.Reset();
                     }
                 }
                 dataIndex++;
-                yield return Tuple.Create(data, result as IEnumerable<double>);
+                var ret = Tuple.Create(data, result as IEnumerable<double>);
+
+                learned.Add(ret);
+
+                yield return ret;
             }
         }
 

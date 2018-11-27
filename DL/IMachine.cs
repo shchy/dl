@@ -17,7 +17,7 @@ namespace dl.DL
         /// </summary>
         /// <param name="learningData"></param>
         /// <returns></returns>
-        void Learn(IEnumerable<ILearningData> learningData);
+        void Learn(IEnumerable<ILearningData> learningData, IEnumerable<ILearningData> validateData);
 
         /// <summary>
         /// 判断さす
