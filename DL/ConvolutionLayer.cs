@@ -13,11 +13,12 @@ namespace dl.DL
         public Func<INode, double> CalcFunction { get; set; }
 
         public ConvolutionLayer(ILayer before, int width, int chSize, int filterSize, int filterCount
-                                , Func<IEnumerable<double>, IEnumerable<double>> activation)
+                                , Func<IEnumerable<double>, IEnumerable<double>> activation
+                                , Func<double, bool> ignoreUpdate = null)
         {
             this.CalcFunction = DLF.CalcFunction;
             this.ActivationFunction = activation;
-            this.UpdateWeightFunction = DLF.UpdateWeight();
+            this.UpdateWeightFunction = DLF.UpdateWeight(ignoreUpdate);
             var height = (before.Nodes.Count() / width) / chSize;
             var xSize = (width - filterSize) + 1;
             var ySize = (height - filterSize) + 1;

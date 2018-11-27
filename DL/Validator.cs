@@ -8,7 +8,7 @@ namespace dl.DL
 {
     public interface IValidator
     {
-        ILearningResult Valid(IEnumerable<Tuple<ILearningData, IEnumerable<double>>> results);
+        ILearningResult Valid(IEnumerable<Tuple<IEnumerable<double>, IEnumerable<double>>> results);
     }
 
     public class Validator : IValidator
@@ -20,7 +20,7 @@ namespace dl.DL
             this.outputSize = outputSize;
         }
 
-        public ILearningResult Valid(IEnumerable<Tuple<ILearningData, IEnumerable<double>>> results)
+        public ILearningResult Valid(IEnumerable<Tuple<IEnumerable<double>, IEnumerable<double>>> results)
         {
             var k = results.Count();
             var expectCount = new int[this.outputSize];
@@ -29,7 +29,7 @@ namespace dl.DL
 
             foreach (var result in results)
             {
-                var expected = result.Item1.Expected.ToArray();
+                var expected = result.Item1.ToArray();
                 var output = result.Item2.ToArray();
 
                 var expectIndex = FindMaxValueIndex(expected);

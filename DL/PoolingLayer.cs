@@ -17,7 +17,7 @@ namespace dl.DL
         {
             this.CalcFunction = n => n.Links.Select(l => l.InputNode.GetValue()).Max();
             this.ActivationFunction = v => v;
-            this.UpdateWeightFunction = DLF.UpdateWeight((n, l, d) =>
+            this.UpdateWeightFunction = DLF.UpdateWeight(null, (n, l, d) =>
             {
                 if (n.GetValue() == l.InputNode.GetValue())
                     l.InputNode.Delta += d * l.Weight.Value;

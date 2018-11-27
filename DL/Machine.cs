@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -42,13 +43,14 @@ namespace dl.DL
             }
         }
 
-        private IEnumerable<Tuple<ILearningData, IEnumerable<double>>> Learn(int i, IEnumerable<ILearningData> learningData)
+        private IEnumerable<Tuple<IEnumerable<double>, IEnumerable<double>>> Learn(int i, IEnumerable<ILearningData> learningData)
         {
-            var shuffled = DLF.Shuffle(learningData);
+            var shuffled = DLF.Shuffle(learningData).ToArray();
             var dataCount = 0;
             var dataIndex = 0;
             var allNodes = this.Layers.SelectMany(x => x.Nodes).Where(x => !(x is ValueNode)).ToArray();
-            var learned = new List<Tuple<ILearningData, IEnumerable<double>>>();
+            var watch = new Stopwatch();
+            watch.Start();
             // テストデータ分繰り返す
             foreach (var data in shuffled)
             {
@@ -66,8 +68,6 @@ namespace dl.DL
                     {
                         node.Apply(this.learningRate);
                     }
-                    var tempResult = this.validator.Valid(learned);
-                    Console.WriteLine($"{i.ToString("00000")}-{dataIndex.ToString("00000")}:{tempResult}");
                 }
                 else
                 {
@@ -77,10 +77,13 @@ namespace dl.DL
                     }
                 }
                 dataIndex++;
-                var ret = Tuple.Create(data, result as IEnumerable<double>);
 
-                learned.Add(ret);
-
+                if(isBatchUpdate)
+                {
+                    Console.WriteLine(watch.ElapsedMilliseconds / miniBatch / 1000.0);
+                    watch.Restart();
+                }
+                var ret = Tuple.Create(data.Expected, result as IEnumerable<double>);
                 yield return ret;
             }
         }

@@ -5,13 +5,16 @@ using System.Text;
 
 namespace dl.DL
 {
+    using UpdateWeightFunc = Action<ILayer, ILayer, Func<IEnumerable<Tuple<double, double>>, double>, ILearningData>;
+
     public static class DLF
     {
         static Random r = new Random(DateTime.Now.Millisecond);
         const double h = 1e-5;
+        const double hh = h * 2.0;
         public static Func<double, double> Derivative(this Func<double, double> f)
         {
-            return x => (f(x + h) - f(x - h)) / (2.0 * h);
+            return x => (f(x + h) - f(x - h)) / hh;
         }
 
         public static double GetRandom()
@@ -23,12 +26,13 @@ namespace dl.DL
 
         public static IEnumerable<T> Shuffle<T>(IEnumerable<T> xs)
         {
-            var array = xs.ToArray();
-            var n = array.Length;
+            var array = xs.ToList();
+            var n = array.Count;
             for (var i = n; i > 0; i--)
             {
                 var next = r.Next(i - 1);
                 yield return array[next];
+                array.RemoveAt(next);
             }
         }
 
@@ -95,9 +99,9 @@ namespace dl.DL
                 };
 
                 // 活性化前の値
-                var u = layer.CalcFunction(node);   // todo cache
+                var u = ux[index];   // todo cache
                 // 出力
-                var o = node.GetValue();
+                var o = ox[index];
                 // 前の層の重み計算で使える部分
                 var delta = ef.Derivative()(o) * of.Derivative()(u);
 
@@ -132,36 +136,45 @@ namespace dl.DL
         }
 
         /// 出力層以外の重み計算
-        public static Action<ILayer, ILayer, Func<IEnumerable<Tuple<double, double>>, double>, ILearningData> UpdateWeight(Action<INode, INodeLink, double> update = null)
+        public static UpdateWeightFunc UpdateWeight(Func<double, bool> ignore = null, Action<INode, INodeLink, double> update = null)
         {
+            ignore = ignore ?? (_ => false);
+            update = update ?? Update;
             return (layer, forwardLayer, errorFunction, data) =>
             {
                 var ux = layer.Nodes.Select(layer.CalcFunction).ToArray();
-
-                foreach (var item in layer.Nodes.Select((x, index) => new { x, index }))
+                
+                // 活性化関数の偏微分
+                Func<int, double> of = (int index) =>
                 {
-                    var node = item.x;
-                    if (node.Delta == 0.0)
-                        continue;
+                    var temp = ux[index];
+                    ux[index] = temp + h;
+                    var left = layer.ActivationFunction(ux).ToArray();
+                    ux[index] = temp - h;
+                    var right = layer.ActivationFunction(ux).ToArray();
+                    var div = (left[index] - right[index]) / hh;
+                    ux[index] = temp;
+                    return div;
+                };
+                var nodes = layer.Nodes.Select((node, index) => new { node, index })
+                    .ToArray();
+                    
 
+                foreach (var item in nodes)
+                {
                     var index = item.index;
-                    // 活性化関数の偏微分
-                    Func<double, double> of = (double x) =>
-                    {
-                        var rx = ux.ToArray();
-                        rx[index] = x;
-                        var result = layer.ActivationFunction(rx).ToArray();
-                        return result[index];
-                    };
 
-                    // 活性化前の値
-                    var u = layer.CalcFunction(node);
+                    if (ignore(ux[index])) continue;
 
+                    var node = item.node;
+                    if (Math.Abs(node.Delta) == 0.0) continue;   // todo only zero?
+                        
                     // 前の層の重み計算で使える部分
-                    var delta = node.Delta * of.Derivative()(u);
+                    var delta = node.Delta * of(index);
+
+                    if (delta == 0.0) continue;
 
                     // 入力Nodeごとに重みを更新
-                    update = update ?? Update;
                     foreach (var link in node.Links)
                     {
                         update(node, link, delta);
