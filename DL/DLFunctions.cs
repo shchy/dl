@@ -143,7 +143,7 @@ namespace dl.DL
             return (layer, forwardLayer, errorFunction, data) =>
             {
                 var ux = layer.Nodes.Select(layer.CalcFunction).ToArray();
-                
+
                 // 活性化関数の偏微分
                 Func<int, double> of = (int index) =>
                 {
@@ -158,7 +158,7 @@ namespace dl.DL
                 };
                 var nodes = layer.Nodes.Select((node, index) => new { node, index })
                     .ToArray();
-                    
+
 
                 foreach (var item in nodes)
                 {
@@ -167,8 +167,8 @@ namespace dl.DL
                     if (ignore(ux[index])) continue;
 
                     var node = item.node;
-                    if (Math.Abs(node.Delta) == 0.0) continue;   // todo only zero?
-                        
+                    if (node.Delta == 0.0) continue;
+
                     // 前の層の重み計算で使える部分
                     var delta = node.Delta * of(index);
 
