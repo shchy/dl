@@ -30,8 +30,8 @@ namespace dl.DL
                     from fy in Enumerable.Range(0, filterSize)
                     select Weight.Make(DLF.GetRandomWeight(), xSize * ySize * chSize))
                     .ToArray()
-                from y in Enumerable.Range(0, ySize * stride).Where(i => i % stride == 0)
-                from x in Enumerable.Range(0, xSize * stride).Where(i => i % stride == 0)
+                from y in Enumerable.Range(0, height - filterSize).Where(i => i % stride == 0)
+                from x in Enumerable.Range(0, width - filterSize).Where(i => i % stride == 0)
                 let links =
                     from channelOffset in Enumerable.Range(0, chSize)
                     let lx = before.Nodes.MakeLink(width, filterSize, x, y + (channelOffset * height), (wx, wy) => weights[(wy * filterSize) + wx]).ToArray()
