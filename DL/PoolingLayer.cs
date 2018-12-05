@@ -5,7 +5,7 @@ using System.Text;
 
 namespace dl.DL
 {
-    public class PoolingLayer : ILayer
+    public class PoolingLayer : I2DLayer
     {
         public IEnumerable<INode> Nodes { get; set; }
         public Func<IEnumerable<double>, IEnumerable<double>> ActivationFunction { get; set; }
@@ -13,8 +13,15 @@ namespace dl.DL
 
         public Func<INode, double> CalcFunction { get; set; }
 
-        public PoolingLayer(ILayer before, int width, int chSize, int poolingSize, int stride)
+        public int OutputWidth { get; set; }
+
+        public int OutputHeight { get; set; }
+
+        public int OutputCh { get; set; }
+
+        public PoolingLayer(ILayer before, ValueTuple<int, int> filter)
         {
+            (int poolingSize, int stride) = filter;
             this.CalcFunction = n => n.Links.Select(l => l.InputNode.GetValue()).Max();
             this.ActivationFunction = v => v;
             this.UpdateWeightFunction = DLF.UpdateWeight(null, (n, l, d) =>
@@ -22,7 +29,27 @@ namespace dl.DL
                 if (n.GetValue() == l.InputNode.GetValue())
                     l.InputNode.Delta += d * l.Weight.Value;
             });
-            var height = (before.Nodes.Count() / width) / chSize;
+
+            int width, height, chSize = 0;
+            if (before is I2DLayer dLayer)
+            {
+                width = dLayer.OutputWidth;
+                height = dLayer.OutputHeight;
+                chSize = dLayer.OutputCh;
+            }
+            else
+            {
+                width = before.Nodes.Count();
+                height = 1;
+                chSize = 1;
+            }
+
+            var xSize = (int)Math.Ceiling((width - poolingSize) / (double)stride);
+            var ySize = (int)Math.Ceiling((height - poolingSize) / (double)stride);
+
+            this.OutputWidth = xSize;
+            this.OutputHeight = ySize;
+            this.OutputCh = chSize;
 
             this.Nodes = (
                 from filterIndex in Enumerable.Range(0, chSize)

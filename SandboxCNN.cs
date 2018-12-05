@@ -16,15 +16,15 @@ namespace dl
             var learningRate = 0.005;
             var outputSize = 10;
             // 入力レイヤ
-            var inputLayer = new InputLayer(28 * 28);
+            var inputLayer = new InputLayer(28, 28);
             // 畳み込みレイヤ
             // プーリングレイヤ
-            var layer00 = new ConvolutionLayer(inputLayer, 28, 1, 3, 20, 1, DLF.ReLU, u => u < 0);
-            var layer01 = new PoolingLayer(layer00, 25, 20, 2, 2);
+            var layer00 = new ConvolutionLayer(inputLayer, (3, 1, 20), DLF.ReLU, u => u < 0);
+            var layer01 = new PoolingLayer(layer00, (2, 2));
             // 畳み込みレイヤ
             // プーリングレイヤ
-            var layer02 = new ConvolutionLayer(layer01, 12, 20, 3, 50, 2, DLF.ReLU, u => u < 0);
-            var layer03 = new PoolingLayer(layer02, 5, 50, 2, 2);
+            var layer02 = new ConvolutionLayer(layer01, (3, 2, 50), DLF.ReLU, u => u < 0);
+            var layer03 = new PoolingLayer(layer02, (2, 2));
             // 出力レイヤ
             var layer04 = new SoftmaxLayer(layer03, outputSize);
 

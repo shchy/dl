@@ -14,6 +14,14 @@ namespace dl.DL
         Action<ILayer, ILayer, Func<IEnumerable<Tuple<double, double>>, double>, ILearningData> UpdateWeightFunction { get; }
         Func<IEnumerable<double>, IEnumerable<double>> ActivationFunction { get; }
         Func<INode, double> CalcFunction { get; }
+    }
+
+    public interface I2DLayer : ILayer
+    {
+
+        int OutputWidth { get; }
+        int OutputHeight { get; }
+        int OutputCh { get; }
 
     }
 

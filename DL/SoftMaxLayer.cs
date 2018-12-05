@@ -13,6 +13,5 @@ namespace dl.DL
                             : base(before, nodeCount, DLF.SoftMax, updateWeightFunction ?? DLF.UpdateWeightOfSoftMax, () => 0.0)
         {
         }
-
     }
 }
