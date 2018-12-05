@@ -11,9 +11,12 @@ namespace dl
     {
         static void Main(string[] args)
         {
-            // var labelFile = "train-labels-idx1-ubyte";
-            // var imageFile = "train-images-idx3-ubyte";
-            // new MNISTLoader().ToBitmap(labelFile, imageFile, "./temp");
+            
+            var labelFile = "train-labels-idx1-ubyte";
+            var imageFile = "train-images-idx3-ubyte";
+            var testData = new MNISTLoader().Load(labelFile, imageFile).ToArray();
+            
+            ConvertData.MNISTToBitmap(testData, 28, "./temp");
 
             // var bmpLoader = new BitmapLoader();
             // var learningData = bmpLoader.Load("./temp/files.xml");
@@ -27,8 +30,8 @@ namespace dl
             //     bmp.ToPositionMoveWithMakeBackground(filePath, 56, 56, "./temp/resize");
             // }
 
-            var a = new CNN();
-            a.Run();
+            // var a = new CNN();
+            // a.Run();
         }
     }
 }
