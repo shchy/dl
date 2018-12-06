@@ -1,8 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using dl.DL;
 
 namespace dl
@@ -12,15 +15,12 @@ namespace dl
         public int[] Data { get; set; }
         public int Width { get; set; }
         public int Height { get; set; }
-
     }
 
     class MNISTLoader
     {
-        public IEnumerable<ILearningData> Load()
+        public IEnumerable<ILearningData> Load(string labelFile, string imageFile)
         {
-            var labelFile = "train-labels-idx1-ubyte";
-            var imageFile = "train-images-idx3-ubyte";
             var labels = ReadLabel(labelFile).ToArray();
             var images = ReadImage(imageFile).ToArray();
             return images.Zip(labels, (i, l) =>
@@ -72,7 +72,45 @@ namespace dl
             }
         }
 
+        public void ToBitmap(string labelFile, string imageFile, string saveFolder)
+        {
+            var labels = ReadLabel(labelFile).ToArray();
+            var images = ReadImage(imageFile).ToArray();
+            var zipped = images.Zip(labels, (img, l) => (img, l)).ToArray();
+
+
+            if (Directory.Exists(saveFolder))
+                Directory.Delete(saveFolder, true);
+            for (var i = 0; i < zipped.Length; i++)
+            {
+                (Image img, int label) = zipped[i];
+                var data = img.Data.Select(x => (byte)x).ToArray();
+
+                using (var bmp = new Bitmap(img.Width, img.Height, PixelFormat.Format8bppIndexed))
+                {
+                    // カラーパレットを設定
+                    var pal = bmp.Palette;
+                    for (int j = 0; j < 256; ++j)
+                    {
+                        pal.Entries[j] = Color.FromArgb(j, j, j);
+                    }
+                    bmp.Palette = pal;
+
+                    // BitmapDataに用意したbyte配列を一気に書き込む
+                    var bmpdata = bmp.LockBits(
+                        new Rectangle(0, 0, img.Width, img.Height),
+                        ImageLockMode.WriteOnly,
+                        PixelFormat.Format8bppIndexed
+                    );
+                    Marshal.Copy(data, 0, bmpdata.Scan0, data.Length);
+                    bmp.UnlockBits(bmpdata);
+
+
+                    if (Directory.Exists(saveFolder) == false)
+                        Directory.CreateDirectory(saveFolder);
+                    bmp.Save(Path.Combine(saveFolder, $"{i.ToString("00000")}_{label}.bmp"));
+                }
+            }
+        }
     }
-
-
 }

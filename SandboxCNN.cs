@@ -39,7 +39,10 @@ namespace dl
                                     , layer03
                                     , layer04);
             // 学習データを生成
-            var testData = DLF.Shuffle(new MNISTLoader().Load()).ToArray();
+
+            var labelFile = "train-labels-idx1-ubyte";
+            var imageFile = "train-images-idx3-ubyte";
+            var testData = DLF.Shuffle(new MNISTLoader().Load(labelFile, imageFile)).ToArray();
 
             // 0-9を均等にピックアップ
             var pickNum = 20;
