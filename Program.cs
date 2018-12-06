@@ -15,8 +15,15 @@ namespace dl
             // var imageFile = "train-images-idx3-ubyte";
             // new MNISTLoader().ToBitmap(labelFile, imageFile, "./temp");
 
-            var a = new CNN();
-            a.Run();
+            var bmps = Directory.GetFiles("./temp").Where(x => Path.GetExtension(x) == ".bmp").ToArray();
+            var bmp = new BitmapLoader();
+            foreach (var filePath in bmps)
+            {
+                bmp.ToPositionMoveWithMakeBackground(filePath, 56, 56, "./temp/resize");
+            }
+
+            // var a = new CNN();
+            // a.Run();
         }
     }
 }
