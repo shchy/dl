@@ -38,14 +38,16 @@ namespace dl
                                     , layer02
                                     , layer03
                                     , layer04);
-            // 学習データを生成
 
-            var labelFile = "train-labels-idx1-ubyte";
-            var imageFile = "train-images-idx3-ubyte";
-            var testData = DLF.Shuffle(new MNISTLoader().Load(labelFile, imageFile)).ToArray();
+            // 学習データを生成
+            // var labelFile = "train-labels-idx1-ubyte";
+            // var imageFile = "train-images-idx3-ubyte";
+            // var testData = DLF.Shuffle(new MNISTLoader().Load(labelFile, imageFile)).ToArray();
+            var bmpLoader = new BitmapLoader();
+            var testData = DLF.Shuffle(bmpLoader.Load("./temp/files.xml")).ToArray();
 
             // 0-9を均等にピックアップ
-            var pickNum = 20;
+            var pickNum = 10;
             var a = new[]{
                 testData.Take(10000).Where(x => x.Name == "0").Take(pickNum),
                 testData.Take(10000).Where(x => x.Name == "1").Take(pickNum),

@@ -6,6 +6,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Xml.Linq;
 using dl.DL;
 
 namespace dl
@@ -77,7 +78,32 @@ namespace dl
             var labels = ReadLabel(labelFile).ToArray();
             var images = ReadImage(imageFile).ToArray();
             var zipped = images.Zip(labels, (img, l) => (img, l)).ToArray();
+            Func<int, string> makeSavePath = (int index) => Path.Combine(saveFolder, $"{index.ToString("00000")}.bmp");
 
+            var loadFile =
+                new XDocument(
+                    new XElement("dataset",
+                        from item in zipped.Select((zip, index) => new { zip.img, label = zip.l, index })
+                        select
+                            new XElement("data",
+                                new XElement("path", makeSavePath(item.index)),
+                                new XElement("size",
+                                    new XAttribute("width", 28),
+                                    new XAttribute("height", 28)),
+                                new XElement("objects",
+                                    new XElement("object",
+                                        new XElement("name", item.label),
+                                        new XElement("position",
+                                            new XAttribute("x", 0),
+                                            new XAttribute("y", 0),
+                                            new XAttribute("width", 28),
+                                            new XAttribute("height", 28)
+                                        )
+                                    )
+                                )
+                            )
+                    )
+                );
 
             if (Directory.Exists(saveFolder))
                 Directory.Delete(saveFolder, true);
@@ -108,9 +134,11 @@ namespace dl
 
                     if (Directory.Exists(saveFolder) == false)
                         Directory.CreateDirectory(saveFolder);
-                    bmp.Save(Path.Combine(saveFolder, $"{i.ToString("00000")}_{label}.bmp"));
+                    bmp.Save(makeSavePath(i));
                 }
             }
+
+            loadFile.Save(Path.Combine(saveFolder, $"files.xml"));
         }
     }
 }

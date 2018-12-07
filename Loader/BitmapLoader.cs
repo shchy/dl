@@ -6,6 +6,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Xml.Linq;
 using dl.DL;
 
 namespace dl
@@ -21,31 +22,47 @@ namespace dl
     {
         public IEnumerable<ILearningData> Load(string loadFile)
         {
-            // var labels = ReadLabel(labelFile).ToArray();
-            // var images = ReadImage(imageFile).ToArray();
-            // return images.Zip(labels, (i, l) =>
-            // {
-            //     return new LearningData
-            //     {
-            //         Data = i.Data.Select(x => (double)x).ToArray(),
-            //         Expected = Enumerable.Range(0, 10).Select(n => n == l ? 1.0 : 0.0).ToArray(),
-            //         Name = l.ToString(),
-            //     };
-            // });
+            var doc = XDocument.Load(loadFile);
 
-            return Enumerable.Empty<ILearningData>();
-
+            return
+                from data in doc.Root.Elements("data")
+                let path = data.Element("path").Value
+                let name = data.Element("objects").Elements("object").First().Element("name").Value
+                let label = int.Parse(name)
+                let ds = LoadBitmap(path).ToArray()
+                select new LearningData
+                {
+                    Data = ds,
+                    Name = name,
+                    Expected = Enumerable.Range(0, 10).Select(n => n == label ? 1.0 : 0.0).ToArray(),
+                };
         }
 
+        private IEnumerable<double> LoadBitmap(string path)
+        {
+            using (var bmp = (Bitmap)Bitmap.FromFile(path))
+            {
+                var width = bmp.Width;
+                var height = bmp.Height;
+
+                for (var y = 0; y < height; y++)
+                {
+                    for (var x = 0; x < width; x++)
+                    {
+                        yield return bmp.GetPixel(x, y).R;
+                    }
+                }
+            }
+        }
 
         public void ToPositionMoveWithMakeBackground(string bitmapFile, int backgroundWidth, int backgroundHeight, string saveFolder)
         {
             var random = new Random(DateTime.Now.Millisecond);
             var bg = new byte[backgroundWidth * backgroundHeight];
-            // for (var i = 0; i < bg.Length; i++)
-            // {
-            //     bg[i] = (byte)random.Next(256);
-            // }
+            for (var i = 0; i < bg.Length; i++)
+            {
+                bg[i] = (byte)random.Next(256);
+            }
 
             // 元画像を描画
             using (var bmp = (Bitmap)Bitmap.FromFile(bitmapFile))
