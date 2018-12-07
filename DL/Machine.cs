@@ -19,18 +19,18 @@ namespace dl.DL
         public IEnumerable<ILayer> Layers { get; set; }
 
         public Machine(double learningRate, int epoch, int miniBatch, IValidator validator
-                    , Func<IEnumerable<Tuple<double, double>>, double> errorFunction
-                    , params ILayer[] layers)
+                    , IModel model)
         {
+            this.Layers = model.Layers;
             // todo 先頭はInputLayerであること
-            this.firstLayer = layers.First() as InputLayer;
-            this.outputLayer = layers.Last();
+            this.firstLayer = Layers.First() as InputLayer;
+            this.outputLayer = Layers.Last();
             this.learningRate = learningRate;
             this.epoch = epoch;
             this.miniBatch = miniBatch;
             this.validator = validator;
-            this.errorFunction = errorFunction;
-            this.Layers = layers;
+            this.errorFunction = x => model.ErrorFunction(x) * (1.0 / miniBatch);
+
         }
 
         public void Learn(IEnumerable<ILearningData> learningData, IEnumerable<ILearningData> validateData)
@@ -78,7 +78,7 @@ namespace dl.DL
                 }
                 dataIndex++;
 
-                if(isBatchUpdate)
+                if (isBatchUpdate)
                 {
                     Console.WriteLine(watch.ElapsedMilliseconds / miniBatch / 1000.0);
                     watch.Restart();

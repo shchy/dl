@@ -11,26 +11,13 @@ namespace dl
     {
         public void Run()
         {
-            // 入力レイヤ
-            var inputLayer = new InputLayer(3);
-            // 隠れレイヤ
-            var layer00 = new FullyConnectedLayer(inputLayer, 20, DLF.ReLU, DLF.UpdateWeight(), DLF.GetRandomWeight);
-            // 隠れレイヤ
-            var layer01 = new FullyConnectedLayer(layer00, 10, DLF.ReLU, DLF.UpdateWeight(), DLF.GetRandomWeight);
-            // 出力レイヤ
-            var layer02 = new SoftmaxLayer(layer01, 3);
-
             var batchSize = 8;
             var epoch = 1000;
             var learningRate = 0.01;
-            Func<IEnumerable<Tuple<double, double>>, double> errorFunction = DLF.ErrorFunctionCrossEntropy;
 
-            var machine = new Machine(learningRate, epoch, batchSize, new Validator(3)
-                                    , x => errorFunction(x) * (1.0 / batchSize)
-                                    , inputLayer
-                                    , layer00
-                                    , layer01
-                                    , layer02);
+            var model = new TestModel();
+
+            var machine = new Machine(learningRate, epoch, batchSize, new Validator(), model);
             // 学習データを生成
             var testData = DLF.Shuffle(
                 from x in Enumerable.Range(1, 8)
@@ -47,6 +34,33 @@ namespace dl
             testData = testData.Take(testData.Length / 2).ToArray();
 
             machine.Learn(testData.ToArray(), validData.ToArray());
+        }
+    }
+
+    class TestModel : IModel
+    {
+        public Func<IEnumerable<Tuple<double, double>>, double> ErrorFunction { get; set; }
+
+        public IEnumerable<ILayer> Layers { get; set; }
+
+        public TestModel()
+        {
+            // 入力レイヤ
+            var inputLayer = new InputLayer(3);
+            // 隠れレイヤ
+            var layer00 = new FullyConnectedLayer(inputLayer, 20, DLF.ReLU, DLF.UpdateWeight(), DLF.GetRandomWeight);
+            // 隠れレイヤ
+            var layer01 = new FullyConnectedLayer(layer00, 10, DLF.ReLU, DLF.UpdateWeight(), DLF.GetRandomWeight);
+            // 出力レイヤ
+            var layer02 = new SoftmaxLayer(layer01, 3);
+
+            this.Layers = new ILayer[]{
+                inputLayer
+                , layer00
+                , layer01
+                , layer02
+            };
+            this.ErrorFunction = DLF.ErrorFunctionCrossEntropy;
         }
     }
 }

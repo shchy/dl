@@ -13,19 +13,18 @@ namespace dl.DL
 
     public class Validator : IValidator
     {
-        private int outputSize;
-
-        public Validator(int outputSize)
-        {
-            this.outputSize = outputSize;
-        }
-
         public ILearningResult Valid(IEnumerable<Tuple<IEnumerable<double>, IEnumerable<double>>> results)
         {
             var k = results.Count();
-            var expectCount = new int[this.outputSize];
-            var outputCount = new int[this.outputSize];
-            var accuracyCount = new int[this.outputSize];
+            var expectCount = new Dictionary<int, int>();
+            var outputCount = new Dictionary<int, int>();
+            var accuracyCount = new Dictionary<int, int>();
+            Action<IDictionary<int, int>, int> countup = (dic, key) =>
+            {
+                if (dic.ContainsKey(key) == false)
+                    dic[key] = 0;
+                dic[key] += 1;
+            };
 
             foreach (var result in results)
             {
@@ -36,22 +35,22 @@ namespace dl.DL
                 var outputIndex = FindMaxValueIndex(output);
 
                 // 期待値のIndexの数を記憶しておく
-                expectCount[expectIndex] += 1;
-                outputCount[outputIndex] += 1;
+                countup(expectCount, expectIndex);
+                countup(outputCount, outputIndex);
 
                 // 正解率
                 if (expectIndex == outputIndex)
                 {
-                    accuracyCount[outputIndex] += 1;
+                    countup(accuracyCount, outputIndex);
                 }
             }
 
             var learningResult = new LearningResult
             {
-                Expected = expectCount,
-                Accuracy = accuracyCount.Sum() / (double)k,
-                Recall = accuracyCount.Zip(expectCount, (a, e) => a / (double)e).ToArray(),
-                Precision = accuracyCount.Zip(outputCount, (a, e) => a / (double)e).ToArray(),
+                Expected = expectCount.Values.ToArray(),
+                Accuracy = accuracyCount.Values.Sum() / (double)k,
+                Recall = accuracyCount.Values.Zip(expectCount.Values, (a, e) => a / (double)e).ToArray(),
+                Precision = accuracyCount.Values.Zip(outputCount.Values, (a, e) => a / (double)e).ToArray(),
             };
             return learningResult;
         }
