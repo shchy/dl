@@ -191,5 +191,20 @@ namespace dl.DL
             link.Weight.Slope += delta * o0;
             link.InputNode.Delta += delta * link.Weight.Value;
         }
+
+        public static int FindMaxValueIndex(IEnumerable<double> xs)
+        {
+            var index = -1;
+            var max = double.MinValue;
+            foreach (var item in xs.Select((x, i) => new { x, i }))
+            {
+                if (max < item.x)
+                {
+                    index = item.i;
+                    max = item.x;
+                }
+            }
+            return index;
+        }
     }
 }

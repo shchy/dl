@@ -31,8 +31,8 @@ namespace dl.DL
                 var expected = result.Item1.ToArray();
                 var output = result.Item2.ToArray();
 
-                var expectIndex = FindMaxValueIndex(expected);
-                var outputIndex = FindMaxValueIndex(output);
+                var expectIndex = DLF.FindMaxValueIndex(expected);
+                var outputIndex = DLF.FindMaxValueIndex(output);
 
                 // 期待値のIndexの数を記憶しておく
                 countup(expectCount, expectIndex);
@@ -54,22 +54,5 @@ namespace dl.DL
             };
             return learningResult;
         }
-
-        private static int FindMaxValueIndex(IEnumerable<double> xs)
-        {
-            var index = -1;
-            var max = double.MinValue;
-            foreach (var item in xs.Select((x, i) => new { x, i }))
-            {
-                if (max < item.x)
-                {
-                    index = item.i;
-                    max = item.x;
-                }
-            }
-            return index;
-        }
-
     }
-
 }
