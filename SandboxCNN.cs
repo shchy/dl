@@ -29,7 +29,7 @@ namespace dl
             if (model.Load(modelData) == false)
             {
                 // 0-9を均等にピックアップ
-                var pickNum = 10;
+                var pickNum = 100;
                 var a = new[]{
                     testData.Take(10000).Where(x => x.Name == "0").Take(pickNum),
                     testData.Take(10000).Where(x => x.Name == "1").Take(pickNum),
