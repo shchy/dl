@@ -15,7 +15,7 @@ namespace dl
             var batchSize = 10;
             var epoch = 10;
             var learningRate = 0.005;
-            var model = new CNNModelTest();
+            var model = new CNNModelTest56();
             var validator = new Validator();
             var modelData = "./models/cnn56";
             var machine = new Machine(learningRate, epoch, batchSize, validator, model);
