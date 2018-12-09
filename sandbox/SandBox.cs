@@ -17,7 +17,7 @@ namespace dl
 
             var model = new TestModel();
 
-            var machine = new Machine(learningRate, epoch, batchSize, new Validator(), model);
+            var machine = new Machine(model, learningRate, epoch, batchSize, new Validator(), _=>{});
             // 学習データを生成
             var testData = DLF.Shuffle(
                 from x in Enumerable.Range(1, 8)

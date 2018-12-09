@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
@@ -18,7 +19,13 @@ namespace dl
             var model = new CNNModelTest56();
             var validator = new Validator();
             var modelData = "./models/cnn56";
-            var machine = new Machine(learningRate, epoch, batchSize, validator, model);
+            var watch = new Stopwatch();
+            var machine = new Machine(model, learningRate, epoch, batchSize, validator
+                            , index => 
+                            {
+                                Console.WriteLine((watch.ElapsedMilliseconds) / 1000.0);
+                                watch.Restart();
+                            });
 
             // 学習データを生成
             var loadCount = 30;
@@ -55,8 +62,10 @@ namespace dl
                     vData.Where(x => x.Name == "8").Take(pickNum),
                     vData.Where(x => x.Name == "9").Take(pickNum),
                 }.SelectMany(x => x).ToArray();
-
+                
+                watch.Start();
                 machine.Learn(a, b);
+                watch.Stop();
                 model.Save(modelData);
             }
 

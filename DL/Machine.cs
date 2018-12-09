@@ -15,11 +15,13 @@ namespace dl.DL
         private readonly int miniBatch;
         private readonly IValidator validator;
         private readonly Func<IEnumerable<Tuple<float, float>>, float> errorFunction;
+        private readonly Action<int> logger;
 
         public IEnumerable<ILayer> Layers { get; set; }
 
-        public Machine(float learningRate, int epoch, int miniBatch, IValidator validator
-                    , IModel model)
+        public Machine(IModel model, float learningRate, int epoch, int miniBatch
+                    , IValidator validator
+                    , Action<int> logger)
         {
             this.Layers = model.Layers;
             // todo 先頭はInputLayerであること
@@ -30,6 +32,7 @@ namespace dl.DL
             this.miniBatch = miniBatch;
             this.validator = validator;
             this.errorFunction = x => model.ErrorFunction(x) * (1.0f / miniBatch);
+            this.logger = logger;
 
         }
 
@@ -45,46 +48,38 @@ namespace dl.DL
 
         private IEnumerable<Tuple<IEnumerable<float>, IEnumerable<float>>> Learn(int i, IEnumerable<ILearningData> learningData)
         {
-            var shuffled = DLF.Shuffle(learningData).ToArray();
-            var dataCount = 0;
-            var dataIndex = 0;
+            var a = DLF.Shuffle(learningData).ToArray();
+            var shuffled = (
+                from bi in Enumerable.Range(0, (a.Length / this.miniBatch) + 1)
+                let batchBlock = a.Skip(bi * this.miniBatch).Take(this.miniBatch).ToArray()
+                select batchBlock)
+                .ToArray();
             var allNodes = this.Layers.SelectMany(x => x.Nodes).Where(x => !(x is ValueNode)).ToArray();
-            var watch = new Stopwatch();
-            watch.Start();
             // テストデータ分繰り返す
-            foreach (var data in shuffled)
+            var dataIndex = 0;
+            foreach (var batchBlock in shuffled)
             {
-                // 処理する
-                var result = Test(data.Data).ToArray();
-
-                // 各Nodeの入力重みを更新
-                UpdateWeight(data);
-
-                dataCount = (dataCount + 1) % (this.miniBatch);
-                var isBatchUpdate = dataCount == 0;
-                if (isBatchUpdate)
+                foreach (var data in batchBlock)
                 {
-                    foreach (var node in allNodes)
-                    {
-                        node.Apply(this.learningRate);
-                    }
-                }
-                else
-                {
+                    // 処理する
+                    var result = Test(data.Data).ToArray();
+
+                    // 各Nodeの入力重みを更新
+                    UpdateWeight(data);
                     foreach (var node in allNodes)
                     {
                         node.Reset();
                     }
+                    var ret = Tuple.Create(data.Expected, result as IEnumerable<float>);
+                    yield return ret;
+                    dataIndex++;
+                    this.logger(dataIndex);
                 }
-                dataIndex++;
 
-                if (isBatchUpdate)
+                foreach (var node in allNodes)
                 {
-                    Console.WriteLine(watch.ElapsedMilliseconds / miniBatch / 1000.0);
-                    watch.Restart();
+                    node.Apply(this.learningRate);
                 }
-                var ret = Tuple.Create(data.Expected, result as IEnumerable<float>);
-                yield return ret;
             }
         }
 
