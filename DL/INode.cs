@@ -15,15 +15,15 @@ namespace dl.DL
         /// </summary>
         IEnumerable<INodeLink> Links { get; }
 
-        void SetValue(double v);
+        void SetValue(float v);
 
         /// <summary>
         /// 活性化関数適応後の出力値
         /// </summary>
-        double GetValue();
+        float GetValue();
 
         void Reset();
-        double Delta { get; set; }
-        void Apply(double learningRate);
+        float Delta { get; set; }
+        void Apply(float learningRate);
     }
 }

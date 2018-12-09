@@ -27,11 +27,11 @@ namespace dl
                 {
                     Data = ds,
                     Name = name,
-                    Expected = Enumerable.Range(0, 10).Select(n => n == label ? 1.0 : 0.0).ToArray(),
+                    Expected = Enumerable.Range(0, 10).Select(n => n == label ? 1.0f : 0.0f).ToArray(),
                 };
         }
 
-        private IEnumerable<double> LoadBitmap(string path)
+        private IEnumerable<float> LoadBitmap(string path)
         {
             using (var bmp = (Bitmap)Bitmap.FromFile(path))
             {

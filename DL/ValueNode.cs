@@ -7,19 +7,19 @@ namespace dl.DL
 {
     public class ValueNode : INode
     {
-        public double Value { get; set; }
-        public double Delta { get; set; }
+        public float Value { get; set; }
+        public float Delta { get; set; }
         public IEnumerable<INodeLink> Links => Enumerable.Empty<INodeLink>();
 
         public ValueNode()
         {
-            this.Value = 0.0;
+            this.Value = 0.0f;
         }
 
         public void Reset() { }
-        public double GetValue() => this.Value;
-        public void SetValue(double v) => this.Value = v;
-        public void Apply(double learningRate) { }
+        public float GetValue() => this.Value;
+        public void SetValue(float v) => this.Value = v;
+        public void Apply(float learningRate) { }
 
     }
 }

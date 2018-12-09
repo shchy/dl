@@ -11,9 +11,9 @@ namespace dl.DL
         /// レイヤ内のノード達
         /// </summary>
         IEnumerable<INode> Nodes { get; }
-        Action<ILayer, ILayer, Func<IEnumerable<Tuple<double, double>>, double>, ILearningData> UpdateWeightFunction { get; }
-        Func<IEnumerable<double>, IEnumerable<double>> ActivationFunction { get; }
-        Func<INode, double> CalcFunction { get; }
+        Action<ILayer, ILayer, Func<IEnumerable<Tuple<float, float>>, float>, ILearningData> UpdateWeightFunction { get; }
+        Func<IEnumerable<float>, IEnumerable<float>> ActivationFunction { get; }
+        Func<INode, float> CalcFunction { get; }
     }
 
     public interface I2DLayer : ILayer
@@ -27,7 +27,7 @@ namespace dl.DL
 
     public static class LayerFunction
     {
-        public static IEnumerable<INodeLink> MakeLink(this IEnumerable<INode> nodes, Func<double> getWeight)
+        public static IEnumerable<INodeLink> MakeLink(this IEnumerable<INode> nodes, Func<float> getWeight)
         {
             return
                 new[] { new NodeLink { InputNode = new ValueNode() { Value = 1 }, Weight = Weight.Make(getWeight()) } }

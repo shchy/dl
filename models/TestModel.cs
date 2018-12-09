@@ -6,7 +6,7 @@ namespace dl
 {
     class TestModel : IModel
     {
-        public Func<IEnumerable<Tuple<double, double>>, double> ErrorFunction { get; set; }
+        public Func<IEnumerable<Tuple<float, float>>, float> ErrorFunction { get; set; }
 
         public IEnumerable<ILayer> Layers { get; set; }
 

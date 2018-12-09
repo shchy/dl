@@ -12,13 +12,13 @@ namespace dl.DL
         /// 期待値の数
         IEnumerable<int> Expected { get; set; }
         /// 正解率
-        double Accuracy { get; }
+        float Accuracy { get; }
 
         /// 精度
-        IEnumerable<double> Precision { get; }
+        IEnumerable<float> Precision { get; }
 
         /// 再現率
-        IEnumerable<double> Recall { get; }
+        IEnumerable<float> Recall { get; }
     }
 
 
@@ -26,13 +26,13 @@ namespace dl.DL
     {
         public IEnumerable<int> Expected { get; set; }
         /// 正解率
-        public double Accuracy { get; set; }
+        public float Accuracy { get; set; }
 
         /// 精度
-        public IEnumerable<double> Precision { get; set; }
+        public IEnumerable<float> Precision { get; set; }
 
         /// 再現率
-        public IEnumerable<double> Recall { get; set; }
+        public IEnumerable<float> Recall { get; set; }
 
         public override string ToString()
         {
@@ -44,7 +44,7 @@ namespace dl.DL
                 ;
         }
 
-        public static string ArrayToString(IEnumerable<double> xs)
+        public static string ArrayToString(IEnumerable<float> xs)
         {
             return
                 ArrayToString(xs, x => x.ToString("0.00"));

@@ -28,8 +28,8 @@ namespace dl
             {
                 return new LearningData
                 {
-                    Data = i.Data.Select(x => (double)x).ToArray(),
-                    Expected = Enumerable.Range(0, 10).Select(n => n == l ? 1.0 : 0.0).ToArray(),
+                    Data = i.Data.Select(x => (float)x).ToArray(),
+                    Expected = Enumerable.Range(0, 10).Select(n => n == l ? 1.0f : 0.0f).ToArray(),
                     Name = l.ToString(),
                 };
             });

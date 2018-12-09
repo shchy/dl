@@ -8,10 +8,10 @@ namespace dl.DL
     public class PoolingLayer : I2DLayer
     {
         public IEnumerable<INode> Nodes { get; set; }
-        public Func<IEnumerable<double>, IEnumerable<double>> ActivationFunction { get; set; }
-        public Action<ILayer, ILayer, Func<IEnumerable<Tuple<double, double>>, double>, ILearningData> UpdateWeightFunction { get; private set; }
+        public Func<IEnumerable<float>, IEnumerable<float>> ActivationFunction { get; set; }
+        public Action<ILayer, ILayer, Func<IEnumerable<Tuple<float, float>>, float>, ILearningData> UpdateWeightFunction { get; private set; }
 
-        public Func<INode, double> CalcFunction { get; set; }
+        public Func<INode, float> CalcFunction { get; set; }
 
         public int OutputWidth { get; set; }
 
@@ -44,8 +44,8 @@ namespace dl.DL
                 chSize = 1;
             }
 
-            var xSize = (int)Math.Ceiling((width - poolingSize) / (double)stride);
-            var ySize = (int)Math.Ceiling((height - poolingSize) / (double)stride);
+            var xSize = (int)Math.Ceiling((width - poolingSize) / (float)stride);
+            var ySize = (int)Math.Ceiling((height - poolingSize) / (float)stride);
 
             this.OutputWidth = xSize;
             this.OutputHeight = ySize;
@@ -56,7 +56,7 @@ namespace dl.DL
                 let filterNodes = before.Nodes.Skip(filterIndex * height * width).Take(height * width).ToArray()
                 from y in Enumerable.Range(0, height - poolingSize).Where(i => i % stride == 0)
                 from x in Enumerable.Range(0, width - poolingSize).Where(i => i % stride == 0)
-                let links = filterNodes.MakeLink(width, poolingSize, x, y, (wx, wy) => Weight.Make(1.0)).ToArray()
+                let links = filterNodes.MakeLink(width, poolingSize, x, y, (wx, wy) => Weight.Make(1.0f)).ToArray()
                 let node = new Node(ActivationFunction, links.Skip(1).ToArray())
                 select node).ToArray();
         }

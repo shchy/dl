@@ -10,15 +10,15 @@ namespace dl.DL
     {
         private InputLayer firstLayer;
         private ILayer outputLayer;
-        private readonly double learningRate;
+        private readonly float learningRate;
         private readonly int epoch;
         private readonly int miniBatch;
         private readonly IValidator validator;
-        private readonly Func<IEnumerable<Tuple<double, double>>, double> errorFunction;
+        private readonly Func<IEnumerable<Tuple<float, float>>, float> errorFunction;
 
         public IEnumerable<ILayer> Layers { get; set; }
 
-        public Machine(double learningRate, int epoch, int miniBatch, IValidator validator
+        public Machine(float learningRate, int epoch, int miniBatch, IValidator validator
                     , IModel model)
         {
             this.Layers = model.Layers;
@@ -29,7 +29,7 @@ namespace dl.DL
             this.epoch = epoch;
             this.miniBatch = miniBatch;
             this.validator = validator;
-            this.errorFunction = x => model.ErrorFunction(x) * (1.0 / miniBatch);
+            this.errorFunction = x => model.ErrorFunction(x) * (1.0f / miniBatch);
 
         }
 
@@ -43,7 +43,7 @@ namespace dl.DL
             }
         }
 
-        private IEnumerable<Tuple<IEnumerable<double>, IEnumerable<double>>> Learn(int i, IEnumerable<ILearningData> learningData)
+        private IEnumerable<Tuple<IEnumerable<float>, IEnumerable<float>>> Learn(int i, IEnumerable<ILearningData> learningData)
         {
             var shuffled = DLF.Shuffle(learningData).ToArray();
             var dataCount = 0;
@@ -83,12 +83,12 @@ namespace dl.DL
                     Console.WriteLine(watch.ElapsedMilliseconds / miniBatch / 1000.0);
                     watch.Restart();
                 }
-                var ret = Tuple.Create(data.Expected, result as IEnumerable<double>);
+                var ret = Tuple.Create(data.Expected, result as IEnumerable<float>);
                 yield return ret;
             }
         }
 
-        public IEnumerable<double> Test(IEnumerable<double> data)
+        public IEnumerable<float> Test(IEnumerable<float> data)
         {
             // 入力レイヤの値を更新
             this.firstLayer.UpdateData(data);

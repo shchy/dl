@@ -8,14 +8,14 @@ namespace dl.DL
     public class FullyConnectedLayer : ILayer
     {
         public IEnumerable<INode> Nodes { get; set; }
-        public Func<IEnumerable<double>, IEnumerable<double>> ActivationFunction { get; set; }
-        public Action<ILayer, ILayer, Func<IEnumerable<Tuple<double, double>>, double>, ILearningData> UpdateWeightFunction { get; private set; }
-        public Func<INode, double> CalcFunction { get; set; }
+        public Func<IEnumerable<float>, IEnumerable<float>> ActivationFunction { get; set; }
+        public Action<ILayer, ILayer, Func<IEnumerable<Tuple<float, float>>, float>, ILearningData> UpdateWeightFunction { get; private set; }
+        public Func<INode, float> CalcFunction { get; set; }
         public FullyConnectedLayer(ILayer before
                                 , int nodeCount
-                                , Func<IEnumerable<double>, IEnumerable<double>> activation
-                                , Action<ILayer, ILayer, Func<IEnumerable<Tuple<double, double>>, double>, ILearningData> updateWeightFunction
-                                , Func<double> getWeight)
+                                , Func<IEnumerable<float>, IEnumerable<float>> activation
+                                , Action<ILayer, ILayer, Func<IEnumerable<Tuple<float, float>>, float>, ILearningData> updateWeightFunction
+                                , Func<float> getWeight)
         {
             this.CalcFunction = DLF.CalcFunction;
             this.ActivationFunction = activation;

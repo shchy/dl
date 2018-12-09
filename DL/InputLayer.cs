@@ -8,10 +8,10 @@ namespace dl.DL
     public class InputLayer : I2DLayer
     {
         public IEnumerable<INode> Nodes { get; set; }
-        public Func<IEnumerable<double>, IEnumerable<double>> ActivationFunction { get; } = (x) => x;
+        public Func<IEnumerable<float>, IEnumerable<float>> ActivationFunction { get; } = (x) => x;
 
-        public Action<ILayer, ILayer, Func<IEnumerable<Tuple<double, double>>, double>, ILearningData> UpdateWeightFunction { get; } = (_1, _2, _3, _4) => { };
-        public Func<INode, double> CalcFunction { get; set; } = (n) => n.GetValue();
+        public Action<ILayer, ILayer, Func<IEnumerable<Tuple<float, float>>, float>, ILearningData> UpdateWeightFunction { get; } = (_1, _2, _3, _4) => { };
+        public Func<INode, float> CalcFunction { get; set; } = (n) => n.GetValue();
 
         public int OutputWidth { get; set; }
 
@@ -37,7 +37,7 @@ namespace dl.DL
             this.OutputCh = 1;
         }
 
-        public void UpdateData(IEnumerable<double> data)
+        public void UpdateData(IEnumerable<float> data)
         {
             // todo サイズチェック
             foreach (var item in Nodes.OfType<ValueNode>().Zip(data, Tuple.Create))

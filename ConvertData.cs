@@ -124,7 +124,7 @@ namespace dl
             loadFile.Save(Path.Combine(saveFolder, $"files.xml"));
         }
 
-        static (string path, int moveX, int moveY, int width, int height) Move(double[] img, int size
+        static (string path, int moveX, int moveY, int width, int height) Move(float[] img, int size
                                                                             , int backgroundWidth, int backgroundHeight
                                                                             , string savePath)
         {

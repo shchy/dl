@@ -14,10 +14,10 @@ namespace dl.DL
         /// <summary>
         /// 入力値
         /// </summary>
-        IEnumerable<double> Data { get; }
+        IEnumerable<float> Data { get; }
         /// <summary>
         /// 期待値
         /// </summary>
-        IEnumerable<double> Expected { get; }
+        IEnumerable<float> Expected { get; }
     }
 }

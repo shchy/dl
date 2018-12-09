@@ -22,10 +22,10 @@ namespace dl.DL
         /// <summary>
         /// 重み
         /// </summary>
-        double Value { get; set; }
+        float Value { get; set; }
         /// 重みに反映する傾き
-        double Slope { get; set; }
+        float Slope { get; set; }
 
-        void Apply(double learningRate);
+        void Apply(float learningRate);
     }
 }

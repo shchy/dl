@@ -9,33 +9,31 @@ namespace dl.DL
     {
         public IWeight Weight { get; set; }
         public INode InputNode { get; set; }
-
-
     }
 
     public class Weight : IWeight
     {
 
-        public double Value { get; set; }
+        public float Value { get; set; }
 
-        public double Slope { get; set; }
+        public float Slope { get; set; }
 
         private int refCounter;
 
 
-        public void Apply(double learningRate)
+        public void Apply(float learningRate)
         {
             if (Slope != 0.0)
                 Value -= (Slope / refCounter) * learningRate;
-            Slope = 0.0;
+            Slope = 0.0f;
         }
 
-        public static IWeight Make(double v, int refCounter = 1)
+        public static IWeight Make(float v, int refCounter = 1)
         {
             return new Weight
             {
                 Value = v,
-                Slope = 0.0,
+                Slope = 0.0f,
                 refCounter = refCounter,
             };
         }

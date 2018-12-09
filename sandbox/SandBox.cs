@@ -13,7 +13,7 @@ namespace dl
         {
             var batchSize = 8;
             var epoch = 1000;
-            var learningRate = 0.01;
+            var learningRate = 0.01f;
 
             var model = new TestModel();
 
@@ -24,10 +24,10 @@ namespace dl
                 from y in Enumerable.Range(1, 8)
                 from z in Enumerable.Range(1, 8)
                 let v = x + (y * 2) + z
-                let expect = v < 15 ? new[] { 1.0, 0.0, 0.0 }
-                        : v < 20 ? new[] { 0.0, 1.0, 0.0 }
-                        : new[] { 0.0, 0.0, 1.0 }
-                select LearningData.New(expect.ToString(), new double[] { x, y, z }, expect))
+                let expect = v < 15 ? new[] { 1.0f, 0.0f, 0.0f }
+                        : v < 20 ? new[] { 0.0f, 1.0f, 0.0f }
+                        : new[] { 0.0f, 0.0f, 1.0f }
+                select LearningData.New(expect.ToString(), new float[] { x, y, z }, expect))
                 .ToArray();
 
             var validData = testData.Skip(testData.Length / 2).ToArray();

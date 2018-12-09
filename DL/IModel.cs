@@ -9,7 +9,7 @@ namespace dl.DL
 {
     public interface IModel
     {
-        Func<IEnumerable<Tuple<double, double>>, double> ErrorFunction { get; }
+        Func<IEnumerable<Tuple<float, float>>, float> ErrorFunction { get; }
         IEnumerable<ILayer> Layers { get; }
     }
 
@@ -63,7 +63,7 @@ namespace dl.DL
                         var links = node.xNode.Elements("linkWeight").ToArray();
                         foreach (var link in node.node.Links.Zip(links, (link, xLink) => (link, xLink)))
                         {
-                            link.link.Weight.Value = double.Parse(link.xLink.Value);
+                            link.link.Weight.Value = float.Parse(link.xLink.Value);
                         }
                     }
                 }

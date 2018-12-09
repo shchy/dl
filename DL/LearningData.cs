@@ -9,11 +9,11 @@ namespace dl.DL
     {
         public string Name { get; set; }
 
-        public IEnumerable<double> Data { get; set; }
+        public IEnumerable<float> Data { get; set; }
 
-        public IEnumerable<double> Expected { get; set; }
+        public IEnumerable<float> Expected { get; set; }
 
-        public static ILearningData New(string name, IEnumerable<double> data, IEnumerable<double> expected)
+        public static ILearningData New(string name, IEnumerable<float> data, IEnumerable<float> expected)
         {
             return new LearningData
             {

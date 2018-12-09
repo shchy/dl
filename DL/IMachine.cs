@@ -24,7 +24,7 @@ namespace dl.DL
         /// </summary>
         /// <param name="data"></param>
         /// <returns></returns>
-        IEnumerable<double> Test(IEnumerable<double> data);
+        IEnumerable<float> Test(IEnumerable<float> data);
 
     }
 }

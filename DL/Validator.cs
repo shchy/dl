@@ -8,12 +8,12 @@ namespace dl.DL
 {
     public interface IValidator
     {
-        ILearningResult Valid(IEnumerable<Tuple<IEnumerable<double>, IEnumerable<double>>> results);
+        ILearningResult Valid(IEnumerable<Tuple<IEnumerable<float>, IEnumerable<float>>> results);
     }
 
     public class Validator : IValidator
     {
-        public ILearningResult Valid(IEnumerable<Tuple<IEnumerable<double>, IEnumerable<double>>> results)
+        public ILearningResult Valid(IEnumerable<Tuple<IEnumerable<float>, IEnumerable<float>>> results)
         {
             var k = results.Count();
             var expectCount = new Dictionary<int, int>();
@@ -48,9 +48,9 @@ namespace dl.DL
             var learningResult = new LearningResult
             {
                 Expected = expectCount.Values.ToArray(),
-                Accuracy = accuracyCount.Values.Sum() / (double)k,
-                Recall = accuracyCount.Values.Zip(expectCount.Values, (a, e) => a / (double)e).ToArray(),
-                Precision = accuracyCount.Values.Zip(outputCount.Values, (a, e) => a / (double)e).ToArray(),
+                Accuracy = accuracyCount.Values.Sum() / (float)k,
+                Recall = accuracyCount.Values.Zip(expectCount.Values, (a, e) => a / (float)e).ToArray(),
+                Precision = accuracyCount.Values.Zip(outputCount.Values, (a, e) => a / (float)e).ToArray(),
             };
             return learningResult;
         }

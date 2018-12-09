@@ -8,9 +8,9 @@ namespace dl.DL
     public class ConvolutionLayer : I2DLayer
     {
         public IEnumerable<INode> Nodes { get; set; }
-        public Func<IEnumerable<double>, IEnumerable<double>> ActivationFunction { get; set; }
-        public Action<ILayer, ILayer, Func<IEnumerable<Tuple<double, double>>, double>, ILearningData> UpdateWeightFunction { get; private set; }
-        public Func<INode, double> CalcFunction { get; set; }
+        public Func<IEnumerable<float>, IEnumerable<float>> ActivationFunction { get; set; }
+        public Action<ILayer, ILayer, Func<IEnumerable<Tuple<float, float>>, float>, ILearningData> UpdateWeightFunction { get; private set; }
+        public Func<INode, float> CalcFunction { get; set; }
 
         public int OutputWidth { get; set; }
 
@@ -19,8 +19,8 @@ namespace dl.DL
         public int OutputCh { get; set; }
 
         public ConvolutionLayer(ILayer before, ValueTuple<int, int, int> filter
-                                , Func<IEnumerable<double>, IEnumerable<double>> activation
-                                , Func<double, bool> ignoreUpdate = null)
+                                , Func<IEnumerable<float>, IEnumerable<float>> activation
+                                , Func<float, bool> ignoreUpdate = null)
         {
             (int filterSize, int stride, int filterCount) = filter;
             this.CalcFunction = DLF.CalcFunction;

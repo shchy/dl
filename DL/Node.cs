@@ -8,19 +8,19 @@ namespace dl.DL
     public class Node : INode
     {
         public IEnumerable<INodeLink> Links { get; set; }
-        private readonly Func<IEnumerable<double>, IEnumerable<double>> activation;
+        private readonly Func<IEnumerable<float>, IEnumerable<float>> activation;
 
-        private double output;
-        public double Delta { get; set; }
+        private float output;
+        public float Delta { get; set; }
 
-        public Node(Func<IEnumerable<double>, IEnumerable<double>> activation, IEnumerable<INodeLink> links)
+        public Node(Func<IEnumerable<float>, IEnumerable<float>> activation, IEnumerable<INodeLink> links)
         {
             this.activation = activation;
             this.Links = links.ToArray();
-            this.output = 0.0;
+            this.output = 0.0f;
         }
 
-        public void Apply(double learningRate)
+        public void Apply(float learningRate)
         {
             Reset();
             foreach (var link in this.Links)
@@ -31,12 +31,12 @@ namespace dl.DL
 
         public void Reset()
         {
-            this.output = 0.0;
-            this.Delta = 0.0;
+            this.output = 0.0f;
+            this.Delta = 0.0f;
         }
 
-        public double GetValue() => this.output;
+        public float GetValue() => this.output;
 
-        public void SetValue(double v) => this.output = v;
+        public void SetValue(float v) => this.output = v;
     }
 }

@@ -9,8 +9,8 @@ namespace dl.DL
     {
         public SoftmaxLayer(ILayer before
                             , int nodeCount
-                            , Action<ILayer, ILayer, Func<IEnumerable<Tuple<double, double>>, double>, ILearningData> updateWeightFunction = null)
-                            : base(before, nodeCount, DLF.SoftMax, updateWeightFunction ?? DLF.UpdateWeightOfSoftMax, () => 0.0)
+                            , Action<ILayer, ILayer, Func<IEnumerable<Tuple<float, float>>, float>, ILearningData> updateWeightFunction = null)
+                            : base(before, nodeCount, DLF.SoftMax, updateWeightFunction ?? DLF.UpdateWeightOfSoftMax, () => 0.0f)
         {
         }
     }
