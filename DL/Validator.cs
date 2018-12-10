@@ -8,12 +8,12 @@ namespace dl.DL
 {
     public interface IValidator
     {
-        ILearningResult Valid(IEnumerable<Tuple<IEnumerable<float>, IEnumerable<float>>> results);
+        ILearningResult Valid(IEnumerable<(IEnumerable<float>, IEnumerable<float>)> results);
     }
 
     public class Validator : IValidator
     {
-        public ILearningResult Valid(IEnumerable<Tuple<IEnumerable<float>, IEnumerable<float>>> results)
+        public ILearningResult Valid(IEnumerable<(IEnumerable<float>, IEnumerable<float>)> results)
         {
             var k = results.Count();
             var expectCount = new Dictionary<int, int>();
@@ -28,8 +28,7 @@ namespace dl.DL
 
             foreach (var result in results)
             {
-                var expected = result.Item1.ToArray();
-                var output = result.Item2.ToArray();
+                var (expected, output) = result;
 
                 var expectIndex = DLF.FindMaxValueIndex(expected);
                 var outputIndex = DLF.FindMaxValueIndex(output);

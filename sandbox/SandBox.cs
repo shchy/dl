@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using dl.DL;
@@ -16,8 +17,13 @@ namespace dl
             var learningRate = 0.01f;
 
             var model = new TestModel();
-
-            var machine = new Machine(model, learningRate, epoch, batchSize, new Validator(), _=>{});
+            var watch = new Stopwatch();
+            var machine = new Machine(model, learningRate, epoch, batchSize, new Validator()
+                                , index => 
+                                {
+                                    if( index % ((8*8*8)/2) == 0 )
+                                        Console.WriteLine((watch.ElapsedMilliseconds / index) / 1000.0);
+                                });
             // 学習データを生成
             var testData = DLF.Shuffle(
                 from x in Enumerable.Range(1, 8)
@@ -32,8 +38,9 @@ namespace dl
 
             var validData = testData.Skip(testData.Length / 2).ToArray();
             testData = testData.Take(testData.Length / 2).ToArray();
-
+            watch.Start();
             machine.Learn(testData.ToArray(), validData.ToArray());
+            watch.Stop();
         }
     }
 

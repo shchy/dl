@@ -46,7 +46,7 @@ namespace dl.DL
             }
         }
 
-        private IEnumerable<Tuple<IEnumerable<float>, IEnumerable<float>>> Learn(int i, IEnumerable<ILearningData> learningData)
+        private IEnumerable<(IEnumerable<float>, IEnumerable<float>)> Learn(int i, IEnumerable<ILearningData> learningData)
         {
             var a = DLF.Shuffle(learningData).ToArray();
             var shuffled = (
@@ -70,8 +70,7 @@ namespace dl.DL
                     {
                         node.Reset();
                     }
-                    var ret = Tuple.Create(data.Expected, result as IEnumerable<float>);
-                    yield return ret;
+                    yield return (data.Expected, result);
                     dataIndex++;
                     this.logger(dataIndex);
                 }
