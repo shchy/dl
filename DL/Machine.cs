@@ -12,16 +12,17 @@ namespace dl.DL
         private ILayer outputLayer;
         private readonly float learningRate;
         private readonly int epoch;
+        private readonly int batchSize;
         private readonly int miniBatch;
         private readonly IValidator validator;
         private readonly Func<IEnumerable<Tuple<float, float>>, float> errorFunction;
-        private readonly Action<int> logger;
+        private readonly Action<int, int> logger;
 
         public IEnumerable<ILayer> Layers { get; set; }
 
-        public Machine(IModel model, float learningRate, int epoch, int miniBatch
+        public Machine(IModel model, float learningRate, int epoch, int batchSize, int miniBatch
                     , IValidator validator
-                    , Action<int> logger)
+                    , Action<int, int> logger)
         {
             this.Layers = model.Layers;
             // todo 先頭はInputLayerであること
@@ -29,9 +30,10 @@ namespace dl.DL
             this.outputLayer = Layers.Last();
             this.learningRate = learningRate;
             this.epoch = epoch;
+            this.batchSize = batchSize;
             this.miniBatch = miniBatch;
             this.validator = validator;
-            this.errorFunction = x => model.ErrorFunction(x) * (1.0f / miniBatch);
+            this.errorFunction = x => model.ErrorFunction(x) * (1.0f / batchSize);
             this.logger = logger;
 
         }
@@ -48,10 +50,9 @@ namespace dl.DL
 
         private IEnumerable<(IEnumerable<float>, IEnumerable<float>)> Learn(int i, IEnumerable<ILearningData> learningData)
         {
-            var a = DLF.Shuffle(learningData).ToArray();
             var shuffled = (
-                from bi in Enumerable.Range(0, (a.Length / this.miniBatch) + 1)
-                let batchBlock = a.Skip(bi * this.miniBatch).Take(this.miniBatch).ToArray()
+                from bi in Enumerable.Range(0, this.miniBatch)
+                let batchBlock = DLF.Shuffle(learningData).Take(this.batchSize).ToArray()
                 select batchBlock)
                 .ToArray();
             var allNodes = this.Layers.SelectMany(x => x.Nodes).Where(x => !(x is ValueNode)).ToArray();
@@ -72,7 +73,7 @@ namespace dl.DL
                     }
                     yield return (data.Expected, result);
                     dataIndex++;
-                    this.logger(dataIndex);
+                    this.logger(i, dataIndex);
                 }
 
                 foreach (var node in allNodes)

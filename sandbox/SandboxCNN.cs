@@ -20,21 +20,28 @@ namespace dl
 
             var model = new CNNModelTest56();
             var modelData = "./models/cnn56";
-            
-            var batchSize = 10;
-            var epoch = 3;
+
+            var batchSize = 8;
+            var epoch = 20;
             var learningRate = 0.005f;
             var validator = new Validator();
             var watch = new Stopwatch();
-            var machine = new Machine(model, learningRate, epoch, batchSize, validator
-                            , index => 
+            var lastep = 0;
+            var machine = new Machine(model, learningRate, epoch, batchSize, 125, validator
+                            , (ep, index) =>
                             {
                                 Console.WriteLine($"{index.ToString("00000")}:{(watch.ElapsedMilliseconds) / 1000.0}");
                                 watch.Restart();
+                                // 1周したら保存しておく
+                                if (lastep != ep)
+                                {
+                                    lastep = ep;
+                                    model.Save(modelData);
+                                }
                             });
-
-            if (model.Load(modelData) == false)
-            {    
+            model.Load(modelData);
+            // if (model.Load(modelData) == false)
+            {
                 watch.Start();
                 machine.Learn(lData, vData);
                 watch.Stop();
@@ -46,7 +53,7 @@ namespace dl
                 let res = machine.Test(test.Data).ToArray()
                 select (test.Expected, res as IEnumerable<float>)
             ).ToArray();
-            
+
             Console.WriteLine($"testResult:{validator.Valid(testResults)}");
         }
 
@@ -55,7 +62,7 @@ namespace dl
             var setCount = loadCount / 3;
             var bmpLoader = new BitmapLoader();
             var testData = bmpLoader.Load("./temp/mnistMove/files.xml").Take(loadCount).ToArray();
-            
+
             var lData = testData.Take(setCount).ToArray();
             var vData = testData.Skip(setCount).Take(setCount).ToArray();
             var tData = testData.Skip(setCount * 2).Take(setCount).ToArray();

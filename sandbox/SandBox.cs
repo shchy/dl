@@ -18,10 +18,10 @@ namespace dl
 
             var model = new TestModel();
             var watch = new Stopwatch();
-            var machine = new Machine(model, learningRate, epoch, batchSize, new Validator()
-                                , index => 
+            var machine = new Machine(model, learningRate, epoch, batchSize, 8 * 4, new Validator()
+                                , (ep, index) =>
                                 {
-                                    if( index % ((8*8*8)/2) == 0 )
+                                    if (index % ((8 * 8 * 8) / 2) == 0)
                                         Console.WriteLine((watch.ElapsedMilliseconds / index) / 1000.0);
                                 });
             // 学習データを生成
