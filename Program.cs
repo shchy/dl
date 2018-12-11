@@ -21,7 +21,7 @@ namespace dl
             // ConvertData.ToBitmapMoveObject(testData, 28, 56, 56, "./temp/mnistMove");
 
 
-            var a = new SandboxCNN();
+            var a = new DetectTest();
             a.Run();
         }
     }

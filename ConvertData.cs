@@ -47,34 +47,39 @@ namespace dl
             for (var i = 0; i < data.Length; i++)
             {
                 var img = data[i].Data;
-                var bitmapData = img.Select(x => (byte)x).ToArray();
-
-                using (var bmp = new Bitmap(size, size, PixelFormat.Format8bppIndexed))
-                {
-                    // カラーパレットを設定
-                    var pal = bmp.Palette;
-                    for (int j = 0; j < 256; ++j)
-                    {
-                        pal.Entries[j] = Color.FromArgb(j, j, j);
-                    }
-                    bmp.Palette = pal;
-
-                    // BitmapDataに用意したbyte配列を一気に書き込む
-                    var bmpdata = bmp.LockBits(
-                        new Rectangle(0, 0, size, size),
-                        ImageLockMode.WriteOnly,
-                        PixelFormat.Format8bppIndexed
-                    );
-                    Marshal.Copy(bitmapData, 0, bmpdata.Scan0, bitmapData.Length);
-                    bmp.UnlockBits(bmpdata);
-
-                    if (Directory.Exists(saveFolder) == false)
-                        Directory.CreateDirectory(saveFolder);
-                    bmp.Save(makeSavePath(i));
-                }
+                ToBitmap(img, size, size, makeSavePath(i));
             }
 
             loadFile.Save(Path.Combine(saveFolder, $"files.xml"));
+        }
+
+        public static void ToBitmap(IEnumerable<float> data, int width, int height, string savePath)
+        {
+            var bitmapData = data.Select(x => (byte)x).ToArray();
+
+            using (var bmp = new Bitmap(width, height, PixelFormat.Format8bppIndexed))
+            {
+                // カラーパレットを設定
+                var pal = bmp.Palette;
+                for (int j = 0; j < 256; ++j)
+                {
+                    pal.Entries[j] = Color.FromArgb(j, j, j);
+                }
+                bmp.Palette = pal;
+
+                // BitmapDataに用意したbyte配列を一気に書き込む
+                var bmpdata = bmp.LockBits(
+                    new Rectangle(0, 0, width, height),
+                    ImageLockMode.WriteOnly,
+                    PixelFormat.Format8bppIndexed
+                );
+                Marshal.Copy(bitmapData, 0, bmpdata.Scan0, bitmapData.Length);
+                bmp.UnlockBits(bmpdata);
+
+                if (Directory.Exists(Path.GetDirectoryName(savePath)) == false)
+                    Directory.CreateDirectory(Path.GetDirectoryName(savePath));
+                bmp.Save(savePath);
+            }
         }
 
         public static void ToBitmapMoveObject(ILearningData[] data, int size

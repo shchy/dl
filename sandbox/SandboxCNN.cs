@@ -14,20 +14,20 @@ namespace dl
         public void Run()
         {
             // 学習データを生成
-            var loadCount = 3000;
+            var loadCount = 6000;
             var (lData, vData, tData) = GetTestData(loadCount);
 
-
-            var model = new CNNModelTest56();
-            var modelData = "./models/cnn56";
+            var model = new CNNModelTest();
+            var modelData = "./backup/cnn";
 
             var batchSize = 8;
-            var epoch = 20;
+            var batchCount = lData.Count() / batchSize;
+            var epoch = 3;
             var learningRate = 0.005f;
             var validator = new Validator();
             var watch = new Stopwatch();
             var lastep = 0;
-            var machine = new Machine(model, learningRate, epoch, batchSize, 125, validator
+            var machine = new Machine(model, learningRate, epoch, batchSize, batchCount, validator
                             , (ep, index) =>
                             {
                                 Console.WriteLine($"{index.ToString("00000")}:{(watch.ElapsedMilliseconds) / 1000.0}");
@@ -39,8 +39,8 @@ namespace dl
                                     model.Save(modelData);
                                 }
                             });
-            model.Load(modelData);
-            // if (model.Load(modelData) == false)
+            
+            if (model.Load(modelData) == false)
             {
                 watch.Start();
                 machine.Learn(lData, vData);
@@ -59,13 +59,14 @@ namespace dl
 
         (IEnumerable<ILearningData>, IEnumerable<ILearningData>, IEnumerable<ILearningData>) GetTestData(int loadCount)
         {
-            var setCount = loadCount / 3;
+            var learningCount = loadCount / 6 * 5;
+            var validCount = loadCount / 6 /2;
             var bmpLoader = new BitmapLoader();
-            var testData = bmpLoader.Load("./temp/mnistMove/files.xml").Take(loadCount).ToArray();
+            var testData = bmpLoader.Load("./temp/mnist/files.xml").Take(loadCount).ToArray();
 
-            var lData = testData.Take(setCount).ToArray();
-            var vData = testData.Skip(setCount).Take(setCount).ToArray();
-            var tData = testData.Skip(setCount * 2).Take(setCount).ToArray();
+            var lData = testData.Take(learningCount).ToArray();
+            var vData = testData.Skip(learningCount).Take(validCount).ToArray();
+            var tData = testData.Skip(learningCount + validCount).ToArray();
             return (lData, vData, tData);
         }
     }
